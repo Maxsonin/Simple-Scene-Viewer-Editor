@@ -176,6 +176,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Debuging.h" />
+    <ClInclude Include="src\Interfaces\Renderable.h" />
+    <ClInclude Include="src\Lightning\PointLight.h" />
     <ClInclude Include="src\Scenes\BaseScenes\CartesianCS.h" />
     <ClInclude Include="src\Application\ApplicationSettings.h" />
     <ClInclude Include="src\Scenes\BaseScenes\Grid.h" />
@@ -634,8 +636,8 @@
     <None Include="shaders\CartesianCSVert.glsl" />
     <None Include="shaders\lightReflectiveObjFrag.glsl" />
     <None Include="shaders\lightReflectiveObjVert.glsl" />
-    <None Include="shaders\lightFrag.glsl" />
-    <None Include="shaders\lightVert.glsl" />
+    <None Include="shaders\imgFrag.glsl" />
+    <None Include="shaders\imgVert.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\brg.png" />

@@ -23,6 +23,8 @@ private:
 
 	static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
+	void ShowWorldSettings();
+
 public:
 	Application(); ~Application();
 

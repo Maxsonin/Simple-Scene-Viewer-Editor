@@ -31,6 +31,9 @@ void Application::framebuffer_size_callback(GLFWwindow* window, int width, int h
 
 Application::Application()
 {
+    // Initialize settings after Application is fully constructed
+    m_settings = new ApplicationSettings(this);
+
     /////////////////////Initialize dependencies/////////////////////
         // Initialize GLFW
     if (!glfwInit())
@@ -43,6 +46,9 @@ Application::Application()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    // MSAA
+    glfwWindowHint(GLFW_SAMPLES, m_settings->getSamplesPerFragment());
 
     m_MainWindow = glfwCreateWindow(m_windowWidth, m_windowHeight, "Test Site", NULL, NULL);
     if (m_MainWindow == NULL)
@@ -64,9 +70,6 @@ Application::Application()
        // Set the viewport
     glViewport(0, 0, m_windowWidth, m_windowHeight);
     glfwSetFramebufferSizeCallback(m_MainWindow, Application::framebuffer_size_callback);
-
-    // Initialize settings after Application is fully constructed
-    m_settings = new ApplicationSettings(this);
 
     // User Standart Settings 
     glfwSwapInterval(m_settings->isVSyncEnabled());
@@ -111,15 +114,16 @@ void Application::Run()
 
         processInput();
 
-        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_DEPTH_TEST); glEnable(GL_MULTISAMPLE);
         glDepthFunc(GL_LEQUAL);
 
+        // Clear Scene
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
         glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Poligon Mode
         if (m_settings->isPolygonModeFill()) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         else glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -127,12 +131,10 @@ void Application::Run()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
         /////////////////////////////////////////////////////////
 
-        //ImGui
-        ImGui::Begin("Worlds Settings");
-        ImGui::SliderFloat("FOV", m_Camera.getFOVByRefferance(), 50.0f, 90.0f);
-        ImGui::End();
+        ShowWorldSettings();
 
         cartesianCS->OnRender();
         grid->OnRender();
@@ -153,6 +155,7 @@ void Application::Run()
         }
 
         /////////////////////////////////////////////////////////
+
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -173,6 +176,53 @@ void Application::Run()
     }
 
     delete cartesianCS;
+}
+
+void Application::ShowWorldSettings()
+{
+    ImGui::Begin("Worlds Settings");
+
+    // FOV slider
+    ImGui::SliderFloat("FOV", m_Camera.getFOVByRefferance(), 50.0f, 90.0f);
+
+    // MSAA combo box
+    const std::vector<std::string> msaaOptions = { "OFF", "2x MSAA", "4x MSAA", "8x MSAA" };
+    static int currentMSAAOption = 2; // Default to 4x MSAA
+    if (ImGui::BeginCombo("MSAA(dont work)", msaaOptions[currentMSAAOption].c_str()))
+    {
+        for (int n = 0; n < msaaOptions.size(); n++)
+        {
+            bool isSelected = (currentMSAAOption == n);
+            if (ImGui::Selectable(msaaOptions[n].c_str(), isSelected))
+            {
+                currentMSAAOption = n;
+                switch (currentMSAAOption)
+                {
+                case 0:
+                    m_settings->setSamplesPerFragment(0);
+                    break;
+                case 1:
+                    m_settings->setSamplesPerFragment(2);
+                    break;
+                case 2:
+                    m_settings->setSamplesPerFragment(4);
+                    break;
+                case 3:
+                    m_settings->setSamplesPerFragment(8);
+                    break;
+                }
+
+                glfwWindowHint(GLFW_SAMPLES, m_settings->getSamplesPerFragment());
+            }
+            if (isSelected)
+            {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    ImGui::End();
 }
 
 void Application::processInput()

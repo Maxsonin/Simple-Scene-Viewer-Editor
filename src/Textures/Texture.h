@@ -13,6 +13,7 @@ public:
 	GLuint m_Unit;
 	std::string m_FilePath;
 
+	Texture() = default;
 	Texture(const char* imagePath, GLenum texType, GLuint slot, GLenum format, GLenum pixelType);
 	~Texture();
 

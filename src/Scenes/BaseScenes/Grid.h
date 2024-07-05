@@ -62,22 +62,19 @@ namespace Scene
 
             generateGridVertices(100.0f, 3.0f);
 
+            VBO = VertexBuffer(gridVertices.data(), gridVertices.size() * sizeof(float)); 
+
             CartesianCSshader.Bind();
-            // Setup for grid
-            VAO.Bind();
-            VBO = VertexBuffer(gridVertices.data(), gridVertices.size() * sizeof(float)); VBO.Bind();
+            VAO.Bind(); VBO.Bind();
             VAO.LinkAttrib(VBO, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
             VAO.LinkAttrib(VBO, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-            VAO.Unbind(); VBO.Unbind();
 
             glCheckError();
         }
 
-        ~Grid() override
-        { }
+        ~Grid() override {}
 
-        void OnUpdate(float deltaTime) override
-        { }
+        void OnUpdate(float deltaTime) override {}
 
         void OnRender() override
         {
@@ -94,14 +91,12 @@ namespace Scene
             CartesianCSshader.setMat4("u_ViewMatrix", view);
             CartesianCSshader.setMat4("u_Projection", perspective);
 
-            // Render axes
             VAO.Bind();
             GL_CHECK(renderer.DrawWithoutEBO(CartesianCSshader, GL_LINES, 0, gridVertices.size() / sizeof(float)));
 
             glCheckError();
         }
 
-        void OnImGuirender() override
-        { }
+        void OnImGuirender() override {}
     };
 }

@@ -37,22 +37,19 @@ namespace Scene
         {
             GL_CHECK(CartesianCSshader = Shader("./shaders/CartesianCSVert.glsl", "./shaders/CartesianCSFrag.glsl"));
 
-            CartesianCSshader.Bind();
-            // Setup for axes
-            VAO.Bind();
             VBO = VertexBuffer(vertices, sizeof(vertices)); VBO.Bind();
+
+            CartesianCSshader.Bind();
+            VAO.Bind(); VBO.Bind();
             VAO.LinkAttrib(VBO, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
             VAO.LinkAttrib(VBO, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-            VAO.Unbind(); VBO.Unbind();
 
             glCheckError();
         }
 
-        ~CartesianCS() override
-        { }
+        ~CartesianCS() override {}
 
-        void OnUpdate(float deltaTime) override
-        { }
+        void OnUpdate(float deltaTime) override {}
 
         void OnRender() override
         {
@@ -68,9 +65,9 @@ namespace Scene
             CartesianCSshader.setMat4("u_ViewMatrix", view);
             CartesianCSshader.setMat4("u_Projection", perspective);
 
-            // Render axes
             VAO.Bind();
             GL_CHECK(renderer.DrawWithoutEBO(CartesianCSshader, GL_LINES, 0, 6));
+            CartesianCSshader.Unbind();
 
             glCheckError();
         }

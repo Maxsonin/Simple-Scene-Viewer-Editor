@@ -1025,6 +1025,12 @@
     <ClInclude Include="src\Scenes\BaseScenes\Grid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Interfaces\Renderable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Lightning\PointLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="libraries\include\glm\detail\func_common.inl">
@@ -1443,8 +1449,8 @@
     </None>
     <None Include="shaders\lightReflectiveObjFrag.glsl" />
     <None Include="shaders\lightReflectiveObjVert.glsl" />
-    <None Include="shaders\lightFrag.glsl" />
-    <None Include="shaders\lightVert.glsl" />
+    <None Include="shaders\imgFrag.glsl" />
+    <None Include="shaders\imgVert.glsl" />
     <None Include="shaders\CartesianCSFrag.glsl" />
     <None Include="shaders\CartesianCSVert.glsl" />
   </ItemGroup>

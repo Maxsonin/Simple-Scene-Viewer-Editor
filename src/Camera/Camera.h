@@ -13,7 +13,7 @@ public:
 	glm::mat4 GetViewMatrix() const;
 
 	void Inputs(GLFWwindow* window);
-	glm::vec3 GetPostion() { return mEye; }
+	glm::vec3 GetPosition() { return mEye; }
 
 	float getFOV() { return m_FOV; }
 	float* getFOVByRefferance() { return &m_FOV; }
