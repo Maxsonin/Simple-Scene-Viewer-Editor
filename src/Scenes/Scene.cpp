@@ -1,4 +1,4 @@
-#include "Scene.h"
+#include "../include/Scenes/Scene.h"
 
 namespace Scene
 {

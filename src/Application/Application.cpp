@@ -1,28 +1,27 @@
-#include "Application.h"
+#include "../include/Application/Application.h"
 
 #include <glm/ext/matrix_float4x4.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
-
 #include <iostream>
 #include <cmath>
 #include <sstream>  
+#include <filesystem>
 
-#include "../Buffers/VertexBuffer.h"
-#include "../Buffers/VertexArray.h"
-#include "../Buffers/IndexBuffer.h"
-#include "../Shaders/Shader.h"
-#include "../Textures/Texture.h"
+#include "../include/Buffers/VertexBuffer.h"
+#include "../include/Buffers/VertexArray.h"
+#include "../include/Buffers/IndexBuffer.h"
+#include "../include/Shaders/Shader.h"
+#include "../include/Textures/Texture.h"
 
-#include "../Scenes/Scene.h"
-#include "../Scenes/UserScenes/SpecularMaps.h"
-#include "../Scenes/BaseScenes/Grid.h"
-#include "ApplicationSettings.h"
-#include "../Scenes/BaseScenes/CartesianCS.h"
+#include "../include/Scenes/Scene.h"
+#include "../include/Scenes/UserScenes/SpecularMaps.h"
+#include "../include/Scenes/BaseScenes/Grid.h"
+#include "../include/Application/ApplicationSettings.h"
+#include "../include/Scenes/BaseScenes/CartesianCS.h"
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
 
 void Application::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -97,6 +96,9 @@ Application::~Application()
 
 void Application::Run()
 {
+
+    std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
+
     Scene::Scene* crntScene = nullptr;
     Scene::SceneMenu* SceneMenu = new Scene::SceneMenu(m_settings, crntScene);
     crntScene = SceneMenu;

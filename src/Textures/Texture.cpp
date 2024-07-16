@@ -1,8 +1,8 @@
-#include "Texture.h"
+#include "../include/Textures/Texture.h"
 #include <iostream>
 
-Texture::Texture(const char* imagePath, GLenum texType, GLuint slot, GLenum format, GLenum pixelType)
-    :m_FilePath(imagePath), m_Type(texType), m_Unit(slot)
+Texture::Texture(const char* imagePath, GLenum texType, GLuint slot, GLenum pixelType)
+    : m_FilePath(imagePath), m_Type(texType), m_Unit(slot)
 {
     int widthImg, heightImg, numColCh;
     stbi_set_flip_vertically_on_load(true);
@@ -11,6 +11,26 @@ Texture::Texture(const char* imagePath, GLenum texType, GLuint slot, GLenum form
     if (!bytes)
     {
         std::cerr << "Failed to load texture: " << imagePath << std::endl;
+        return;
+    }
+
+    GLenum format;
+    if (numColCh == 4)
+    {
+        format = GL_RGBA;
+    }
+    else if (numColCh == 3)
+    {
+        format = GL_RGB;
+    }
+    else if (numColCh == 1)
+    {
+        format = GL_RED;
+    }
+    else
+    {
+        std::cerr << "Unsupported number of color channels: " << numColCh << std::endl;
+        stbi_image_free(bytes);
         return;
     }
 
@@ -23,7 +43,7 @@ Texture::Texture(const char* imagePath, GLenum texType, GLuint slot, GLenum form
     glTexParameteri(texType, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(texType, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glTexImage2D(texType, 0, GL_RGBA, widthImg, heightImg, 0, format, pixelType, bytes);
+    glTexImage2D(texType, 0, format, widthImg, heightImg, 0, format, pixelType, bytes);
     glGenerateMipmap(texType);
 
     if (glGetError() != GL_NO_ERROR)

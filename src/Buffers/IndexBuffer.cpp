@@ -1,4 +1,4 @@
-#include "IndexBuffer.h"
+#include "../include/Buffers/IndexBuffer.h"
 
 IndexBuffer::IndexBuffer(const GLuint* indices, GLsizeiptr size)
 	: m_Count(size / sizeof(GLuint))
