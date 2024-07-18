@@ -81,10 +81,18 @@ public:
             else if (name == "texture_height")
                 number = std::to_string(heightNr++); // transfer unsigned int to string
 
-            // now set the sampler to the correct texture unit
-            glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
-            // and finally bind the texture
-            glBindTexture(GL_TEXTURE_2D, textures[i].id);
+            if (name != "texture_normal" && name != "texture_height")
+            {
+                // now set the sampler to the correct texture unit
+                int location = glGetUniformLocation(shader.ID, ("u_Material." + name + number).c_str());
+                if (location < 0) {
+                    std::cout << "Error in location for: " << "u_Material." + name + number << std::endl;
+                }
+                glUniform1i(location, i);
+                // and finally bind the texture
+                glBindTexture(GL_TEXTURE_2D, textures[i].id);
+            }
+
 
             glCheckError();
         }

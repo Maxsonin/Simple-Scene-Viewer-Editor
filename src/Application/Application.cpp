@@ -97,9 +97,6 @@ Application::~Application()
 
 void Application::Run()
 {
-
-    std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
-
     Scene::Scene* crntScene = nullptr;
     Scene::SceneMenu* SceneMenu = new Scene::SceneMenu(m_settings, crntScene);
     crntScene = SceneMenu;
