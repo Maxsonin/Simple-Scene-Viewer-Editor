@@ -2,6 +2,7 @@
 #define VERTEX_BUFFER_H
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 
 class VertexBuffer
 {

@@ -10,6 +10,7 @@ class Texture
 public:
 	GLuint m_RendererID;
 	GLenum m_Type;
+	std::string m_TypeOfUse;
 	GLuint m_Unit;
 	std::string m_FilePath;
 

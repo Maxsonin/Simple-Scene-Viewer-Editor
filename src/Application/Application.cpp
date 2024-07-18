@@ -22,6 +22,7 @@
 #include "../include/Scenes/BaseScenes/CartesianCS.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include "../include/Scenes/UserScenes/BackpackModel.h"
 
 void Application::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -107,6 +108,7 @@ void Application::Run()
     Scene::Grid* grid = new Scene::Grid(m_settings);
 
     SceneMenu->RegisterTest<Scene::SpecularMaps>("Specular Maps Showcase");
+    SceneMenu->RegisterTest<Scene::BackpackModel>("Model Showcase");
 
     static int frameCount, FPS;
     static double previousTime;

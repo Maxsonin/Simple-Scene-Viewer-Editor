@@ -10,6 +10,8 @@
 #include "../../Lightning/DirectionLight.h"
 #include "../../Lightning/SpotLight.h"
 
+#include "../include/Renderer/Renderer.h"
+
 namespace Scene
 {
     class SpecularMaps : public Scene
