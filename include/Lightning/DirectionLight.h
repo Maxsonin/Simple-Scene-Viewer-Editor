@@ -2,7 +2,8 @@
 
 #include <glm/glm.hpp>
 #include <glad/glad.h>
-#include "../Shaders/Shader.h"
+
+#include "Shaders/Shader.h"
 
 class DirectionLight
 {

@@ -1,19 +1,42 @@
 #ifndef VERTEX_ARRAY_H
 #define VERTEX_ARRAY_H
 
-#include "VertexBuffer.h"
+#include <glad/glad.h>
+
+#include "Buffers/VertexBuffer.h"
 
 class VertexArray
 {
 public:
 	GLuint m_RendererID;
 
-	VertexArray();
+	VertexArray()
+	{
+		glGenVertexArrays(1, &m_RendererID);
+	}
 
-	void Bind() const;
-	void LinkAttrib(VertexBuffer& VBO, GLuint layout, GLuint numComponents, GLenum type, GLsizei stride, void* offset);
-	void Unbind() const;
-	void Delete();
+	void Delete()
+	{
+		glDeleteVertexArrays(1, &m_RendererID);
+	}
+
+	void Bind() const
+	{
+		glBindVertexArray(m_RendererID);
+	}
+
+	void LinkAttrib(VertexBuffer& VBO, GLuint layout, GLuint numComponents, GLenum type, GLsizei stride, void* offset)
+	{
+		VBO.Bind();
+		glVertexAttribPointer(layout, numComponents, type, GL_FALSE, stride, offset);
+		glEnableVertexAttribArray(layout);
+		VBO.Unbind();
+	}
+
+	void Unbind() const
+	{
+		glBindVertexArray(0);
+	}
 };
 
 #endif

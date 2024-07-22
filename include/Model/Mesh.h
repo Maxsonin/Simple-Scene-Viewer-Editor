@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 #include <Shaders/Shader.h>
-#include <Debuging.h>
+#include "Debugging/Debugging.h"
 using namespace std;
 
 #define MAX_BONE_INFLUENCE 4

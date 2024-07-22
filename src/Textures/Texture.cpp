@@ -1,5 +1,6 @@
-#include "../include/Textures/Texture.h"
 #include <iostream>
+
+#include "Textures/Texture.h"
 
 Texture::Texture(const char* imagePath, GLenum texType, GLuint slot, GLenum pixelType)
     : m_FilePath(imagePath), m_Type(texType), m_Unit(slot)
@@ -65,9 +66,16 @@ Texture::~Texture()
 
 void Texture::texUnit(Shader& shader, const char* uniformName, GLuint unit)
 {
-	GLuint texUni = glGetUniformLocation(shader.ID, uniformName);
-	shader.Bind();
-	glUniform1i(texUni, unit);
+    shader.Bind();
+    GLuint texUni = glGetUniformLocation(shader.ID, uniformName);
+    if (texUni == -1)
+    {
+        std::cout << "ERROR: Uniform \"" << uniformName << "\" not found in shader." << std::endl;
+    }
+    else
+    {
+        glUniform1i(texUni, unit);
+    }
 }
 
 void Texture::Bind()

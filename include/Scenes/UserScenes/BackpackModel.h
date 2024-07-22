@@ -1,17 +1,18 @@
 #pragma once
 
 #include <glad/glad.h>
-#include "../Scene.h"
-#include "imgui.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "../../Debuging.h"
-#include "../../Lightning/PointLight.h"
-#include "../../Lightning/DirectionLight.h"
-#include "../../Lightning/SpotLight.h"
+#include <imgui.h>
 
-#include "../include/Renderer/Renderer.h"
-#include <Model/Model.h>
+#include "Application/Application.h"
+#include "Debugging/Debugging.h"
+#include "Lightning/DirectionLight.h"
+#include "Lightning/PointLight.h"
+#include "Lightning/SpotLight.h"
+#include "Model/Model.h"
+#include "Renderer/Renderer.h"
+#include "Scenes/Scene.h"
 
 namespace Scene
 {
@@ -51,9 +52,7 @@ namespace Scene
             // MVP
             glm::mat4 model(1.0f);
             glm::mat4 view = m_ApplicationSettings->application->getCamera().GetViewMatrix();
-            float FOV = m_ApplicationSettings->application->getCamera().getFOV();
-            float aspectRatio = float(m_ApplicationSettings->application->getWindowWidth()) / m_ApplicationSettings->application->getWindowHeight();
-            glm::mat4 perspective = glm::perspective(glm::radians(FOV), aspectRatio, 0.01f, 1000.f);
+            glm::mat4 perspective = m_ApplicationSettings->application->GetProjectionMatrix();
 
             defaultShader.Bind();
 

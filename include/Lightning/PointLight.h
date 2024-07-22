@@ -2,11 +2,12 @@
 
 #include <glm/glm.hpp>
 #include <glad/glad.h>
-#include "../Buffers/VertexArray.h"
-#include "../Buffers/IndexBuffer.h"
-#include "../Shaders/Shader.h"
-#include "../Textures/Texture.h"
-#include "../Debuging.h"
+
+#include "Buffers/VertexArray.h"
+#include "Buffers/IndexBuffer.h"
+#include "Shaders/Shader.h"
+#include "Textures/Texture.h"
+#include "Debugging/Debugging.h"
 
 class PointLight
 {

@@ -28,16 +28,13 @@ add_subdirectory(dependencies/glad)               # OpenGL loader
 add_subdirectory(dependencies/stb_image)          # Image loader
 add_subdirectory(dependencies/glm)                # Math library
 add_subdirectory(dependencies/imgui-docking)      # UI library
-add_subdirectory(dependencies/assimp)             # UI library
+add_subdirectory(dependencies/assimp)             # Model Loading library
 
 # Automatically add all .cpp files from the src directory
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
 # Automatically add all .h files from the include directory
 file(GLOB_RECURSE MY_HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
-
-# Automatically add all resource files from the resources directory
-file(GLOB_RECURSE RESOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/*")
 
 add_executable("${CMAKE_PROJECT_NAME}" ${MY_SOURCES} ${MY_HEADERS})
 
@@ -58,19 +55,15 @@ endif()
 if(MSVC) # If using the VS compiler...
     target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC _CRT_SECURE_NO_WARNINGS)
 
-    # Uncomment this line if you want to remove the console window!
+    # Uncomment this line if you want to remove the console window
     # set_target_properties("${CMAKE_PROJECT_NAME}" PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup") # No console
 endif()
 
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
+
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE glm glfw glad stb_image imgui assimp)
 
 # Copy resources to the build directory
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources)
-
-# Group source files by folders in Visual Studio
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" PREFIX "Source Files" FILES ${MY_SOURCES})
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" PREFIX "Header Files" FILES ${MY_HEADERS})
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/resources" PREFIX "Resource Files" FILES ${RESOURCE_FILES})

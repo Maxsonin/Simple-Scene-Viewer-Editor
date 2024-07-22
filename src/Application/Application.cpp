@@ -1,36 +1,42 @@
 #include "../include/Application/Application.h"
 
+#include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_float4x4.hpp>
 #include <glm/ext/matrix_transform.hpp>
-#include <glm/ext/matrix_clip_space.hpp>
-
-#include <iostream>
-#include <cmath>
-#include <sstream>  
-#include <filesystem>
-
-#include "../include/Buffers/VertexBuffer.h"
-#include "../include/Buffers/VertexArray.h"
-#include "../include/Buffers/IndexBuffer.h"
-#include "../include/Shaders/Shader.h"
-#include "../include/Textures/Texture.h"
-
-#include "../include/Scenes/Scene.h"
-#include "../include/Scenes/UserScenes/SpecularMaps.h"
-#include "../include/Scenes/BaseScenes/Grid.h"
-#include "../include/Application/ApplicationSettings.h"
-#include "../include/Scenes/BaseScenes/CartesianCS.h"
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include "../include/Scenes/UserScenes/BackpackModel.h"
+
+#include <cmath>
+#include <filesystem>
+#include <iostream>
+#include <sstream>  
+
+#include "Buffers/IndexBuffer.h"
+#include "Buffers/VertexArray.h"
+#include "Buffers/VertexBuffer.h"
+#include "Shaders/Shader.h"
+#include "Textures/Texture.h"
+#include "Application/ApplicationSettings.h"
+#include "Scenes/BaseScenes/CartesianCS.h"
+#include "Scenes/Scene.h"
+#include "Scenes/UserScenes/BackpackModel.h"
+#include "Scenes/UserScenes/SpecularMaps.h"
+
 
 void Application::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
+static void error_callback(int error, const char* description)
+{
+    std::cout << "GLFW ERROR: " << description << "\n";
+}
+
 
 Application::Application()
 {
+    glfwSetErrorCallback(error_callback);
+
     // Initialize settings after Application is fully constructed
     m_settings = new ApplicationSettings(this);
 
@@ -78,6 +84,7 @@ Application::Application()
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(m_MainWindow, true);
     ImGui_ImplOpenGL3_Init("#version 330");
@@ -102,7 +109,6 @@ void Application::Run()
     crntScene = SceneMenu;
 
     Scene::CartesianCS* cartesianCS = new Scene::CartesianCS(m_settings);
-    Scene::Grid* grid = new Scene::Grid(m_settings);
 
     SceneMenu->RegisterTest<Scene::SpecularMaps>("Specular Maps Showcase");
     SceneMenu->RegisterTest<Scene::BackpackModel>("Model Showcase");
@@ -115,30 +121,36 @@ void Application::Run()
 
         processInput();
 
-        glEnable(GL_DEPTH_TEST); glEnable(GL_MULTISAMPLE);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_MULTISAMPLE);
         glDepthFunc(GL_LEQUAL);
 
-        // Clear Scene
+        Renderer::ClearFrame(glm::vec3(0.3, 0.3, 0.3));
+
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Poligon Mode
         if (m_settings->isPolygonModeFill()) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         else glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        //ImGui
+        // ImGui
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        // Create a dock space
+        ImGuiIO& io = ImGui::GetIO();
+        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+        {
+            ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        }
 
         /////////////////////////////////////////////////////////
 
         ShowWorldSettings();
 
         cartesianCS->OnRender();
-        grid->OnRender();
 
         if (crntScene)
         {
@@ -179,12 +191,14 @@ void Application::Run()
     delete cartesianCS;
 }
 
+
+
 void Application::ShowWorldSettings()
 {
     ImGui::Begin("Worlds Settings");
 
     // FOV slider
-    ImGui::SliderFloat("FOV", m_Camera.getFOVByRefferance(), 50.0f, 90.0f);
+    ImGui::SliderFloat("FOV", m_Camera.getFOVByRefferance(), 45.0f, 90.0f);
 
     // MSAA combo box
     const std::vector<std::string> msaaOptions = { "OFF", "2x MSAA", "4x MSAA", "8x MSAA" };

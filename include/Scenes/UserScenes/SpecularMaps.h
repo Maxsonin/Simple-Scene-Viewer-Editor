@@ -1,16 +1,18 @@
 #pragma once
 
 #include <glad/glad.h>
-#include "../Scene.h"
-#include "imgui.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "../../Debuging.h"
-#include "../../Lightning/PointLight.h"
-#include "../../Lightning/DirectionLight.h"
-#include "../../Lightning/SpotLight.h"
+#include <imgui.h>
 
-#include "../include/Renderer/Renderer.h"
+#include "Application/Application.h"
+#include "Debugging/Debugging.h"
+#include "Lightning/DirectionLight.h"
+#include "Lightning/PointLight.h"
+#include "Lightning/SpotLight.h"
+#include "Renderer/Renderer.h"
+#include "Scenes/Scene.h"
+#include "Textures/Texture.h"
 
 namespace Scene
 {
@@ -24,12 +26,12 @@ namespace Scene
 
         Renderer renderer;
 
-        GLfloat planeVertices[44] =
-        {    // COORDINATES       // NORMALS          // COLOR          // TexCoord 
-            -1.0f, 0.0f,  1.0f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f, 0.0f,   0.0f, 0.0f,
-            -1.0f, 0.0f, -1.0f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f, 0.0f,   0.0f, 1.0f,
-             1.0f, 0.0f, -1.0f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f, 0.0f,   1.0f, 1.0f,
-             1.0f, 0.0f,  1.0f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f, 0.0f,   1.0f, 0.0f
+        GLfloat planeVertices[32] =
+        {    // COORDINATES       // NORMALS          // TexCoord 
+            -1.0f, 0.0f,  1.0f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f,
+            -1.0f, 0.0f, -1.0f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
+             1.0f, 0.0f, -1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f,
+             1.0f, 0.0f,  1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f
         };
 
         GLuint planeIndices[6] =
@@ -59,8 +61,8 @@ namespace Scene
         SpecularMaps(ApplicationSettings* appSet)
             : Scene(appSet),
             plank{
-              Texture("./resources/planks.png", GL_TEXTURE_2D, 0, GL_UNSIGNED_BYTE),
-              Texture("./resources/planksSpec.png", GL_TEXTURE_2D, 1, GL_UNSIGNED_BYTE),
+              Texture("./resources/specularMapsScene/planks.png", GL_TEXTURE_2D, 0, GL_UNSIGNED_BYTE),
+              Texture("./resources/specularMapsScene/planksSpec.png", GL_TEXTURE_2D, 1, GL_UNSIGNED_BYTE),
               32.0f
             }
         {
@@ -73,15 +75,14 @@ namespace Scene
 
             defaultShader.Bind();
 
-            planeVAO.LinkAttrib(planeVBO, 0, 3, GL_FLOAT, 11 * sizeof(GLfloat), (void*)0);                     // Vertex Coordinates
-            planeVAO.LinkAttrib(planeVBO, 1, 3, GL_FLOAT, 11 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat))); // Normals
-            planeVAO.LinkAttrib(planeVBO, 2, 3, GL_FLOAT, 11 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat))); // Color
-            planeVAO.LinkAttrib(planeVBO, 3, 2, GL_FLOAT, 11 * sizeof(GLfloat), (void*)(9 * sizeof(GLfloat))); // Texture Coordinates
+            planeVAO.LinkAttrib(planeVBO, 0, 3, GL_FLOAT, 8 * sizeof(GLfloat), (void*)0);                     // Vertex Coordinates
+            planeVAO.LinkAttrib(planeVBO, 1, 3, GL_FLOAT, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat))); // Normals
+            planeVAO.LinkAttrib(planeVBO, 2, 2, GL_FLOAT, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat))); // Texture Coordinates
             planeVAO.Unbind(); planeVBO.Unbind(); planeEBO.Unbind();
 
             // Material Initialization
-            plank.diffuse.texUnit(defaultShader, "u_Material.diffuse", 0);
-            plank.specular.texUnit(defaultShader, "u_Material.specular", 1);
+            plank.diffuse.texUnit(defaultShader, "u_Material.texture_diffuse1", 0);
+            plank.specular.texUnit(defaultShader, "u_Material.texture_specular1", 1);
             defaultShader.setFloat("u_Material.shininess", plank.shininess);
 
             defaultShader.Unbind();
@@ -98,9 +99,7 @@ namespace Scene
             // MVP
             glm::mat4 model(1.0f);
             glm::mat4 view = m_ApplicationSettings->application->getCamera().GetViewMatrix();
-            float FOV = m_ApplicationSettings->application->getCamera().getFOV();
-            float aspectRatio = float(m_ApplicationSettings->application->getWindowWidth()) / m_ApplicationSettings->application->getWindowHeight();
-            glm::mat4 perspective = glm::perspective(glm::radians(FOV), aspectRatio, 0.01f, 1000.f);
+            glm::mat4 perspective = m_ApplicationSettings->application->GetProjectionMatrix();
 
             defaultShader.Bind();
 
@@ -127,7 +126,7 @@ namespace Scene
             defaultShader.setMat4("u_ViewMatrix", view);
             defaultShader.setMat4("u_Projection", perspective);
 
-            GL_CHECK(renderer.DrawWithEBO(planeVAO, planeEBO, defaultShader));
+            GL_CHECK(Renderer::DrawWithTriangles(planeVAO, planeEBO, defaultShader));
 
             GL_CHECK(pointLights[0].Render(view, perspective, viewPos));
             GL_CHECK(pointLights[1].Render(view, perspective, viewPos));

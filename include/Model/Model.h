@@ -17,7 +17,7 @@
 #include <map>
 #include <vector>
 #include "Mesh.h"
-#include <Debuging.h>
+#include "Debugging/Debugging.h"
 using namespace std;
 
 unsigned int TextureFromFile(const char* path, const string& directory, bool gamma = false);

@@ -1,16 +1,16 @@
 #pragma once
 
-#include "imgui.h"
+#include <imgui.h>
 #include <vector>
 #include <string>
 #include <functional>
 
-#include "../Shaders/Shader.h"
-#include "../Buffers/VertexArray.h"
-#include "../Buffers/VertexBuffer.h"
-#include "../Buffers/IndexBuffer.h"
-#include "../Textures/Texture.h"
-#include "../Application/ApplicationSettings.h"
+#include "Shaders/Shader.h"
+#include "Buffers/VertexArray.h"
+#include "Buffers/VertexBuffer.h"
+#include "Buffers/IndexBuffer.h"
+#include "Textures/Texture.h"
+#include "Application/ApplicationSettings.h"
 
 namespace Scene
 {

@@ -1,9 +1,10 @@
 #ifndef TEXTURE_CLASS_H
 #define TEXTURE_CLASS_H
 
-#include "../Shaders/Shader.h"
-#include <stb_image/stb_image.h>
 #include <glad/glad.h>
+#include <stb_image/stb_image.h>
+
+#include "Shaders/Shader.h"
 
 class Texture
 {
