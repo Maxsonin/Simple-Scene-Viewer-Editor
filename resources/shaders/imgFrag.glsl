@@ -8,5 +8,8 @@ uniform sampler2D u_img;
 
 void main()
 {
-    FragColor = texture(u_img, TextureCoordinates);
+    vec4 imgColor = texture(u_img, TextureCoordinates);
+    if(imgColor.a < 0.1)
+        discard;
+    FragColor = imgColor;
 }

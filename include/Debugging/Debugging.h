@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 #include <iostream>
 
-GLenum glCheckError_(const char* file, int line)
+inline GLenum glCheckError_(const char* file, int line)
 {
     GLenum errorCode;
     while ((errorCode = glGetError()) != GL_NO_ERROR)
@@ -23,9 +23,10 @@ GLenum glCheckError_(const char* file, int line)
     }
     return errorCode;
 }
+
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 
 
-void checkOpenGLError(const char* stmt, const char* fname, int line) {
+inline void checkOpenGLError_(const char* stmt, const char* fname, int line) {
     GLenum err = glGetError();
     if (err != GL_NO_ERROR) {
         std::cerr << "OpenGL error " << err << ", at " << stmt << " " << fname << ":" << line << std::endl;
@@ -35,5 +36,5 @@ void checkOpenGLError(const char* stmt, const char* fname, int line) {
 
 #define GL_CHECK(stmt) do { \
         stmt; \
-        checkOpenGLError(#stmt, __FILE__, __LINE__); \
+        checkOpenGLError_(#stmt, __FILE__, __LINE__); \
     } while (0)

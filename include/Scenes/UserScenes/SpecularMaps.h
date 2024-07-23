@@ -7,12 +7,12 @@
 
 #include "Application/Application.h"
 #include "Debugging/Debugging.h"
-#include "Lightning/DirectionLight.h"
-#include "Lightning/PointLight.h"
-#include "Lightning/SpotLight.h"
 #include "Renderer/Renderer.h"
 #include "Scenes/Scene.h"
 #include "Textures/Texture.h"
+#include "Lightning/PointLight.h"
+#include "Lightning/DirectionLight.h"
+#include "Lightning/SpotLight.h"
 
 namespace Scene
 {
@@ -23,8 +23,6 @@ namespace Scene
         VertexArray planeVAO;
         VertexBuffer planeVBO;
         IndexBuffer planeEBO;
-
-        Renderer renderer;
 
         GLfloat planeVertices[32] =
         {    // COORDINATES       // NORMALS          // TexCoord 
@@ -47,20 +45,15 @@ namespace Scene
             float   shininess;
         };
 
+        PointLight light1;
+        SpotLight spotlight1;
+
         Material plank;
-
-        DirectionLight dirLight;
-        PointLight pointLights[2];
-        SpotLight spotLights[2];
-
-        // Array of Point Lights
-        glm::vec3 pointLightPos[2] = { glm::vec3(1.0f, 0.6f, 0.0f),
-                                       glm::vec3(1.0f, 0.0f, 0.0f) };
 
     public:
         SpecularMaps(ApplicationSettings* appSet)
             : Scene(appSet),
-            plank{
+            plank {
               Texture("./resources/specularMapsScene/planks.png", GL_TEXTURE_2D, 0, GL_UNSIGNED_BYTE),
               Texture("./resources/specularMapsScene/planksSpec.png", GL_TEXTURE_2D, 1, GL_UNSIGNED_BYTE),
               32.0f
@@ -84,6 +77,9 @@ namespace Scene
             plank.diffuse.texUnit(defaultShader, "u_Material.texture_diffuse1", 0);
             plank.specular.texUnit(defaultShader, "u_Material.texture_specular1", 1);
             defaultShader.setFloat("u_Material.shininess", plank.shininess);
+
+            pointLights.push_back(light1);
+            spotLights.push_back(spotlight1);
 
             defaultShader.Unbind();
 
@@ -110,14 +106,19 @@ namespace Scene
             glm::vec3 viewPos = m_ApplicationSettings->application->getCamera().GetPosition();
             defaultShader.setVec3("u_ViewPos", viewPos);
 
-            // Directional light
-            dirLight.SetShaderUniforms(defaultShader);
+            // SetUniform
+                defaultShader.setBool("u_DirectionLightEnabled", isDirectionLightEnabled);
+                // Directional light
+                if (isDirectionLightEnabled)
+                {
+                    directionLight.SetShaderUniforms(defaultShader);
+                }
+                // Point lights
+                for (int i = 0; i < pointLights.size(); i++) { pointLights[i].SetShaderUniforms(defaultShader, i); }
 
-            // Point lights
-            for (int i = 0; i < 2; i++) { pointLights[i].SetShaderUniforms(defaultShader, i); }
-
-            // Spot Lights
-            for (int i = 0; i < 1; i++) { spotLights[i].SetShaderUniforms(defaultShader, i); }
+                // Spot Lights
+                for (int i = 0; i < spotLights.size(); i++) { spotLights[i].SetShaderUniforms(defaultShader, i); }
+            //
 
             // Render the Plane
             model = glm::mat4(1.0f);
@@ -126,12 +127,16 @@ namespace Scene
             defaultShader.setMat4("u_ViewMatrix", view);
             defaultShader.setMat4("u_Projection", perspective);
 
+            defaultShader.setInt("u_NumPointLights", pointLights.size());
+            defaultShader.setInt("u_NumSpotLights", spotLights.size());
+
             GL_CHECK(Renderer::DrawWithTriangles(planeVAO, planeEBO, defaultShader));
 
-            GL_CHECK(pointLights[0].Render(view, perspective, viewPos));
-            GL_CHECK(pointLights[1].Render(view, perspective, viewPos));
+            for (size_t i = 0; i < pointLights.size(); i++)
+                GL_CHECK(pointLights[i].Render(view, perspective, viewPos));
 
-            GL_CHECK(spotLights[0].Render(view, perspective));
+            for (size_t i = 0; i < spotLights.size(); i++)
+                GL_CHECK(spotLights[i].Render(view, perspective));
 
             defaultShader.Unbind();
 
@@ -142,31 +147,26 @@ namespace Scene
         void OnImGuirender() override
         {
             ImGui::Begin("Scene Settings");
-            ImGui::Text("Light Settings:");
-            ImGui::Text("\tDirection Light");
-            ImGui::SliderFloat("Dir light PosX:", &dirLight.direction.x, -10, 10);
-            ImGui::SliderFloat("Dir light PosY:", &dirLight.direction.y, -10, 10);
-            ImGui::SliderFloat("Dir light PosZ:", &dirLight.direction.z, -10, 10);
 
-            ImGui::Text("\tPosint Light");
+            if (ImGui::CollapsingHeader("Lightning"))
+            {
+                ImGui::Checkbox("Enable Direction Light ", &isDirectionLightEnabled);
 
-            ImGui::SliderFloat("Point1 light PosX:", &pointLights[0].position.x, -10, 10);
-            ImGui::SliderFloat("Point1 light PosY:", &pointLights[0].position.y, -10, 10);
-            ImGui::SliderFloat("Point1 light PosZ:", &pointLights[0].position.z, -10, 10);
+                for (size_t i = 0; i < pointLights.size(); i++)
+                {
+                    pointLights[i].AddLightSettings(i);
+                }
 
-            ImGui::SliderFloat("Point2 light PosX:", &pointLights[1].position.x, -10, 10);
-            ImGui::SliderFloat("Point2 light PosY:", &pointLights[1].position.y, -10, 10);
-            ImGui::SliderFloat("Point2 light PosZ:", &pointLights[1].position.z, -10, 10);
+                for (size_t i = 0; i < spotLights.size(); i++)
+                {
+                    spotLights[i].AddLightSettings(i);
+                }
 
-            ImGui::Text("\tSpot Light");
-
-            ImGui::SliderFloat("Spot light DirX:", &spotLights[0].direction.x, -10, 10);
-            ImGui::SliderFloat("Spot light DirY:", &spotLights[0].direction.y, -10, 10);
-            ImGui::SliderFloat("Spot light DirZ:", &spotLights[0].direction.z, -10, 10);
-
-            ImGui::SliderFloat("Spot light PosX:", &spotLights[0].position.x, -10, 10);
-            ImGui::SliderFloat("Spot light PosY:", &spotLights[0].position.y, -10, 10);
-            ImGui::SliderFloat("Spot light PosZ:", &spotLights[0].position.z, -10, 10);
+                if (isDirectionLightEnabled)
+                {
+                    directionLight.AddLightSettings();
+                }
+            }
 
             ImGui::End();
         }

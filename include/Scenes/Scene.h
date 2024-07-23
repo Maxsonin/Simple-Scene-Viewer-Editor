@@ -10,7 +10,10 @@
 #include "Buffers/VertexBuffer.h"
 #include "Buffers/IndexBuffer.h"
 #include "Textures/Texture.h"
-#include "Application/ApplicationSettings.h"
+#include "Application/Application.h"
+#include "Lightning/PointLight.h"
+#include "Lightning/DirectionLight.h"
+#include "Lightning/SpotLight.h"
 
 namespace Scene
 {
@@ -27,6 +30,12 @@ namespace Scene
         virtual void OnImGuirender() {}
     protected:
         ApplicationSettings* m_ApplicationSettings;
+
+        // Light Settings
+        std::vector<PointLight> pointLights;
+        std::vector<SpotLight> spotLights;
+        DirectionLight directionLight;
+        bool isDirectionLightEnabled = false;
     };
 
     class SceneMenu : public Scene

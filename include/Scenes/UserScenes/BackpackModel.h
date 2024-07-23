@@ -95,31 +95,26 @@ namespace Scene
         void OnImGuirender() override
         {
             ImGui::Begin("Scene Settings");
-            ImGui::Text("Light Settings:");
-            ImGui::Text("\tDirection Light");
-            ImGui::SliderFloat("Dir light PosX:", &dirLight.direction.x, -10, 10);
-            ImGui::SliderFloat("Dir light PosY:", &dirLight.direction.y, -10, 10);
-            ImGui::SliderFloat("Dir light PosZ:", &dirLight.direction.z, -10, 10);
 
-            ImGui::Text("\tPosint Light");
+            if (ImGui::CollapsingHeader("Combo"))
+            {
+                // Add combo related settings here
+            }
 
-            ImGui::SliderFloat("Point1 light PosX:", &pointLights[0].position.x, -10, 10);
-            ImGui::SliderFloat("Point1 light PosY:", &pointLights[0].position.y, -10, 10);
-            ImGui::SliderFloat("Point1 light PosZ:", &pointLights[0].position.z, -10, 10);
-
-            ImGui::SliderFloat("Point2 light PosX:", &pointLights[1].position.x, -10, 10);
-            ImGui::SliderFloat("Point2 light PosY:", &pointLights[1].position.y, -10, 10);
-            ImGui::SliderFloat("Point2 light PosZ:", &pointLights[1].position.z, -10, 10);
-
-            ImGui::Text("\tSpot Light");
-
-            ImGui::SliderFloat("Spot light DirX:", &spotLights[0].direction.x, -10, 10);
-            ImGui::SliderFloat("Spot light DirY:", &spotLights[0].direction.y, -10, 10);
-            ImGui::SliderFloat("Spot light DirZ:", &spotLights[0].direction.z, -10, 10);
-
-            ImGui::SliderFloat("Spot light PosX:", &spotLights[0].position.x, -10, 10);
-            ImGui::SliderFloat("Spot light PosY:", &spotLights[0].position.y, -10, 10);
-            ImGui::SliderFloat("Spot light PosZ:", &spotLights[0].position.z, -10, 10);
+            if (ImGui::CollapsingHeader("Plots Widgets"))
+            {
+                if (ImGui::TreeNode("Animate"))
+                {
+                    // Add animate related settings here
+                    ImGui::TreePop();
+                }
+                if (ImGui::TreeNode("Histogram"))
+                {
+                    // Add histogram related settings here
+                    ImGui::TreePop();
+                }
+                // Add more nested sections as needed
+            }
 
             ImGui::End();
         }

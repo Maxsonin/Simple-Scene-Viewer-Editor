@@ -8,6 +8,7 @@
 #include "Shaders/Shader.h"
 #include "Textures/Texture.h"
 #include "Debugging/Debugging.h"
+#include <imgui.h>
 
 class PointLight
 {
@@ -113,5 +114,32 @@ public:
         shader.setVec3((baseName + ".specular").c_str(), specular);
 
         glCheckError();
+    }
+
+    void AddLightSettings(int i)
+    {
+        if (ImGui::CollapsingHeader("Point Light " + i))
+        {
+            if (ImGui::TreeNode("Basic Settings"))
+            {
+                ImGui::InputFloat("X Position", &position.x);
+                ImGui::InputFloat("Y Position", &position.y);
+                ImGui::InputFloat("Z Position", &position.z);
+                ImGui::ColorEdit3("Diffuse Color", (float*)&diffuse);
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Advanced Settings"))
+            {
+                ImGui::InputFloat("Constant", &constant);
+                ImGui::InputFloat("Linear", &linear);
+                ImGui::InputFloat("Quadratic", &quadratic);
+                ImGui::ColorEdit3("Ambient Color", (float*)&ambient);
+                ImGui::ColorEdit3("Specular Color", (float*)&specular);
+
+                ImGui::TreePop();
+            }
+        }
     }
 };
