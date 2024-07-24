@@ -191,7 +191,14 @@ void Application::Run()
     delete cartesianCS;
 }
 
-
+//void Application::DebugPanel(Scene::Scene crntScene)
+//{
+//    ImGui::Begin("Debug Log");
+//
+//    //crntScene.GetDebugOutput();
+//
+//    ImGui::End;
+//}
 
 void Application::ShowWorldSettings()
 {

@@ -20,17 +20,8 @@ namespace Scene
     {
     private:
         Shader defaultShader;
-        VertexArray planeVAO;
-        VertexBuffer planeVBO;
-        IndexBuffer planeEBO;
-
-        Renderer renderer;
 
         Model backpack;
-
-        DirectionLight dirLight;
-        PointLight pointLights[2];
-        SpotLight spotLights[2];
 
     public:
         BackpackModel(ApplicationSettings* appSet)
@@ -39,6 +30,8 @@ namespace Scene
             GL_CHECK(defaultShader = Shader("./resources/shaders/lightReflectiveObjVert.glsl", "./resources/shaders/lightReflectiveObjFrag.glsl"));
 
             GL_CHECK(backpack = Model("./resources/objects/backpack/backpack.obj"));
+
+            isDirectionLightEnabled = true;
 
             glCheckError();
         }
@@ -49,42 +42,16 @@ namespace Scene
 
         void OnRender() override
         {
-            // MVP
-            glm::mat4 model(1.0f);
-            glm::mat4 view = m_ApplicationSettings->application->getCamera().GetViewMatrix();
-            glm::mat4 perspective = m_ApplicationSettings->application->GetProjectionMatrix();
-
             defaultShader.Bind();
+
+            UpdateBasicSettings(defaultShader);
 
             // Initialize back pack shininess
             defaultShader.setFloat("u_Material.shininess", 32.0f);
 
-            // Light Initialization
-            glm::vec3 viewPos = m_ApplicationSettings->application->getCamera().GetPosition();
-            defaultShader.setVec3("u_ViewPos", viewPos);
+            GL_CHECK(backpack.Draw(defaultShader));
 
-            // Directional light
-            dirLight.SetShaderUniforms(defaultShader);
-
-            // Point lights
-            for (int i = 0; i < 2; i++) { pointLights[i].SetShaderUniforms(defaultShader, i); }
-
-            // Spot Lights
-            for (int i = 0; i < 1; i++) { spotLights[i].SetShaderUniforms(defaultShader, i); }
-
-            model = glm::mat4(1.0f);
-            defaultShader.setMat4("u_ModelMatrix", model);
-            defaultShader.setMat4("u_ViewMatrix", view);
-            defaultShader.setMat4("u_Projection", perspective);
-
-            GL_CHECK(pointLights[0].Render(view, perspective, viewPos));
-            GL_CHECK(pointLights[1].Render(view, perspective, viewPos));
-
-            GL_CHECK(spotLights[0].Render(view, perspective));
-
-            defaultShader.Bind();
-
-            backpack.Draw(defaultShader);
+            RenderBasicElements(defaultShader);
 
             defaultShader.Unbind();
 
@@ -96,24 +63,24 @@ namespace Scene
         {
             ImGui::Begin("Scene Settings");
 
-            if (ImGui::CollapsingHeader("Combo"))
+            if (ImGui::CollapsingHeader("Lightning"))
             {
-                // Add combo related settings here
-            }
+                ImGui::Checkbox("Enable Direction Light ", &isDirectionLightEnabled);
 
-            if (ImGui::CollapsingHeader("Plots Widgets"))
-            {
-                if (ImGui::TreeNode("Animate"))
+                for (size_t i = 0; i < pointLights.size(); i++)
                 {
-                    // Add animate related settings here
-                    ImGui::TreePop();
+                    pointLights[i].AddLightSettings(i);
                 }
-                if (ImGui::TreeNode("Histogram"))
+
+                for (size_t i = 0; i < spotLights.size(); i++)
                 {
-                    // Add histogram related settings here
-                    ImGui::TreePop();
+                    spotLights[i].AddLightSettings(i);
                 }
-                // Add more nested sections as needed
+
+                if (isDirectionLightEnabled)
+                {
+                    directionLight.AddLightSettings();
+                }
             }
 
             ImGui::End();

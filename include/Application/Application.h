@@ -7,6 +7,7 @@
 
 #include "Camera/Camera.h"
 #include "Renderer/Renderer.h"
+#include "Scenes/Scene.h"
 
 class ApplicationSettings;
 
@@ -46,6 +47,8 @@ public:
 	}
 
 	void Run();
+
+	//void DebugPanel(Scene::Scene crntScene);
 
 	void processInput();
 };

@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <iostream>
+#include <imgui.h>
 
 inline GLenum glCheckError_(const char* file, int line)
 {
@@ -30,7 +31,7 @@ inline void checkOpenGLError_(const char* stmt, const char* fname, int line) {
     GLenum err = glGetError();
     if (err != GL_NO_ERROR) {
         std::cerr << "OpenGL error " << err << ", at " << stmt << " " << fname << ":" << line << std::endl;
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -38,3 +39,11 @@ inline void checkOpenGLError_(const char* stmt, const char* fname, int line) {
         stmt; \
         checkOpenGLError_(#stmt, __FILE__, __LINE__); \
     } while (0)
+
+//ImVec4 redColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);   // Red color
+//ImVec4 greenColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // Green color
+//ImVec4 blueColor = ImVec4(0.0f, 0.0f, 1.0f, 1.0f);  // Blue color
+
+//ImGui::TextColored(redColor, "This text is red.");
+//ImGui::TextColored(greenColor, "This text is green.");
+//ImGui::TextColored(blueColor, "This text is blue.");

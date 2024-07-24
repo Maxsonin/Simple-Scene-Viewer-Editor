@@ -92,51 +92,17 @@ namespace Scene
 
         void OnRender() override
         {
-            // MVP
-            glm::mat4 model(1.0f);
-            glm::mat4 view = m_ApplicationSettings->application->getCamera().GetViewMatrix();
-            glm::mat4 perspective = m_ApplicationSettings->application->GetProjectionMatrix();
-
             defaultShader.Bind();
+
+            UpdateBasicSettings(defaultShader);
 
             // Bind Textures
             plank.diffuse.Bind(); plank.specular.Bind();
 
-            // Light Initialization
-            glm::vec3 viewPos = m_ApplicationSettings->application->getCamera().GetPosition();
-            defaultShader.setVec3("u_ViewPos", viewPos);
-
-            // SetUniform
-                defaultShader.setBool("u_DirectionLightEnabled", isDirectionLightEnabled);
-                // Directional light
-                if (isDirectionLightEnabled)
-                {
-                    directionLight.SetShaderUniforms(defaultShader);
-                }
-                // Point lights
-                for (int i = 0; i < pointLights.size(); i++) { pointLights[i].SetShaderUniforms(defaultShader, i); }
-
-                // Spot Lights
-                for (int i = 0; i < spotLights.size(); i++) { spotLights[i].SetShaderUniforms(defaultShader, i); }
-            //
-
-            // Render the Plane
-            model = glm::mat4(1.0f);
-            model = glm::scale(model, glm::vec3(4.5f, 1.0f, 4.5f));
-            defaultShader.setMat4("u_ModelMatrix", model);
-            defaultShader.setMat4("u_ViewMatrix", view);
-            defaultShader.setMat4("u_Projection", perspective);
-
-            defaultShader.setInt("u_NumPointLights", pointLights.size());
-            defaultShader.setInt("u_NumSpotLights", spotLights.size());
-
+            model = glm::scale(model, glm::vec3(4.5f, 1.0f, 4.5f)); defaultShader.setMat4("u_ModelMatrix", model);
             GL_CHECK(Renderer::DrawWithTriangles(planeVAO, planeEBO, defaultShader));
 
-            for (size_t i = 0; i < pointLights.size(); i++)
-                GL_CHECK(pointLights[i].Render(view, perspective, viewPos));
-
-            for (size_t i = 0; i < spotLights.size(); i++)
-                GL_CHECK(spotLights[i].Render(view, perspective));
+            RenderBasicElements(defaultShader);
 
             defaultShader.Unbind();
 

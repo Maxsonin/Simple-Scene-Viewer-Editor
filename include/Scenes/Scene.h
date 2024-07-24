@@ -11,6 +11,7 @@
 #include "Buffers/IndexBuffer.h"
 #include "Textures/Texture.h"
 #include "Application/Application.h"
+#include "Application/ApplicationSettings.h"
 #include "Lightning/PointLight.h"
 #include "Lightning/DirectionLight.h"
 #include "Lightning/SpotLight.h"
@@ -28,14 +29,23 @@ namespace Scene
         virtual void OnUpdate(float deltaTime) {}
         virtual void OnRender() {}
         virtual void OnImGuirender() {}
+
+        void UpdateBasicSettings(Shader shader);
+        void RenderBasicElements(Shader shader);
     protected:
         ApplicationSettings* m_ApplicationSettings;
 
         // Light Settings
         std::vector<PointLight> pointLights;
-        std::vector<SpotLight> spotLights;
-        DirectionLight directionLight;
+        std::vector<SpotLight>  spotLights;
+        DirectionLight          directionLight;
         bool isDirectionLightEnabled = false;
+
+        // MVP
+        glm::mat4 model      = glm::mat4(1.0f);
+        glm::mat4 view       = glm::mat4(1.0f);
+        glm::mat4 projection = glm::mat4(1.0f);
+        glm::vec3 viewPos    = glm::vec3(1.0f);
     };
 
     class SceneMenu : public Scene
