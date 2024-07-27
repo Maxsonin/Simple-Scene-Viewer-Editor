@@ -2,8 +2,8 @@
 
 #include "Textures/Texture.h"
 
-Texture::Texture(const char* imagePath, GLenum texType, GLuint slot, GLenum pixelType)
-    : m_FilePath(imagePath), m_Type(texType), m_Unit(slot)
+Texture::Texture(const char* imagePath, GLuint slot)
+    : m_FilePath(imagePath), m_Unit(slot)
 {
     int widthImg, heightImg, numColCh;
     stbi_set_flip_vertically_on_load(true);
@@ -36,27 +36,65 @@ Texture::Texture(const char* imagePath, GLenum texType, GLuint slot, GLenum pixe
     }
 
     glGenTextures(1, &m_RendererID);
-    glActiveTexture(GL_TEXTURE0 + slot);
-    glBindTexture(texType, m_RendererID);
+    glActiveTexture(GL_TEXTURE0 + m_Unit);
+    glBindTexture(GL_TEXTURE_2D, m_RendererID);
 
-    glTexParameteri(texType, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(texType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(texType, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(texType, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glTexImage2D(texType, 0, format, widthImg, heightImg, 0, format, pixelType, bytes);
-    glGenerateMipmap(texType);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, widthImg, heightImg, 0, format, GL_UNSIGNED_BYTE, bytes);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     if (glGetError() != GL_NO_ERROR)
     {
         std::cerr << "OpenGL error occurred during texture initialization: " << imagePath << std::endl;
         stbi_image_free(bytes);
-        glBindTexture(texType, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
         return;
     }
 
     stbi_image_free(bytes);
-    glBindTexture(texType, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+unsigned int Texture::TextureFromFile(const char* path)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Tex failed to load at path: " << path << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
 }
 
 Texture::~Texture()
@@ -64,27 +102,23 @@ Texture::~Texture()
     glDeleteTextures(1, &m_RendererID);
 }
 
-void Texture::texUnit(Shader& shader, const char* uniformName, GLuint unit)
+void Texture::PassTextureToShader(Shader& shader, const char* uniformName)
 {
     shader.Bind();
-    GLuint texUni = glGetUniformLocation(shader.ID, uniformName);
-    if (texUni == -1)
-    {
-        std::cout << "ERROR: Uniform \"" << uniformName << "\" not found in shader." << std::endl;
-    }
+    GLuint textureLocation = glGetUniformLocation(shader.ID, uniformName);
+    if (textureLocation == -1)
+        std::cerr << "ERROR: Uniform \"" << uniformName << "\" not found in shader." << std::endl;
     else
-    {
-        glUniform1i(texUni, unit);
-    }
+        glUniform1i(textureLocation, m_Unit);
 }
 
 void Texture::Bind()
 {
 	glActiveTexture(GL_TEXTURE0 + m_Unit);
-	glBindTexture(m_Type, m_RendererID);
+	glBindTexture(GL_TEXTURE_2D, m_RendererID);
 }
 
 void Texture::Unbind()
 {
-	glBindTexture(m_Type, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }

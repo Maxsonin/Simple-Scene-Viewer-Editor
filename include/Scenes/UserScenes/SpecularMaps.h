@@ -13,6 +13,7 @@
 #include "Lightning/PointLight.h"
 #include "Lightning/DirectionLight.h"
 #include "Lightning/SpotLight.h"
+#include "Model/Model.h"
 
 namespace Scene
 {
@@ -50,16 +51,21 @@ namespace Scene
 
         Material plank;
 
+        Model box;
+
     public:
         SpecularMaps(ApplicationSettings* appSet)
             : Scene(appSet),
-            plank {
-              Texture("./resources/specularMapsScene/planks.png", GL_TEXTURE_2D, 0, GL_UNSIGNED_BYTE),
-              Texture("./resources/specularMapsScene/planksSpec.png", GL_TEXTURE_2D, 1, GL_UNSIGNED_BYTE),
+            plank
+            {
+              Texture("./resources/specularMapsScene/planks.png", 0),
+              Texture("./resources/specularMapsScene/planksSpec.png", 1),
               32.0f
             }
         {
             GL_CHECK(defaultShader = Shader("./resources/shaders/lightReflectiveObjVert.glsl", "./resources/shaders/lightReflectiveObjFrag.glsl"));
+
+            GL_CHECK(box = Model("./resources/objects/box.obj"));
 
             planeVBO = VertexBuffer(planeVertices, sizeof(planeVertices));
             planeEBO = IndexBuffer(planeIndices, sizeof(planeIndices));
@@ -74,9 +80,12 @@ namespace Scene
             planeVAO.Unbind(); planeVBO.Unbind(); planeEBO.Unbind();
 
             // Material Initialization
-            plank.diffuse.texUnit(defaultShader, "u_Material.texture_diffuse1", 0);
-            plank.specular.texUnit(defaultShader, "u_Material.texture_specular1", 1);
+            plank.diffuse.PassTextureToShader(defaultShader, "u_Material.texture_diffuse1");
+            plank.specular.PassTextureToShader(defaultShader, "u_Material.texture_specular1");
             defaultShader.setFloat("u_Material.shininess", plank.shininess);
+
+            light1.position = glm::vec3(2.0f, 1.0f, 0.0f);
+            spotlight1.position = glm::vec3(0.0f, 4.0f, 0.0f);
 
             pointLights.push_back(light1);
             spotLights.push_back(spotlight1);
@@ -96,10 +105,20 @@ namespace Scene
 
             UpdateBasicSettings(defaultShader);
 
-            // Bind Textures
-            plank.diffuse.Bind(); plank.specular.Bind();
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, 0);
 
-            model = glm::scale(model, glm::vec3(4.5f, 1.0f, 4.5f)); defaultShader.setMat4("u_ModelMatrix", model);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 0.0f)); defaultShader.setMat4("u_ModelMatrix", model);
+            box.Draw(defaultShader);
+
+            // Bind Textures
+            plank.specular.Bind(); plank.diffuse.Bind();
+
+            model = glm::mat4(1.0f);
+            model = glm::scale(model, glm::vec3(4.5f, 2.0f, 4.5f)); defaultShader.setMat4("u_ModelMatrix", model);
             GL_CHECK(Renderer::DrawWithTriangles(planeVAO, planeEBO, defaultShader));
 
             RenderBasicElements(defaultShader);

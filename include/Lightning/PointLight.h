@@ -22,7 +22,7 @@ public:
     glm::vec3 ambient;
     glm::vec3 diffuse;
     glm::vec3 specular;
-
+private:
     VertexArray VAO;
     VertexBuffer VBO;
     IndexBuffer EBO;
@@ -30,8 +30,9 @@ public:
 
     Texture img;
 
+public:
     PointLight()
-        : img("./resources/system/lightIco.png", GL_TEXTURE_2D, 0, GL_UNSIGNED_BYTE),
+        : img("./resources/system/lightIco.png", 0),
         position{ 0.0f, 1.0f, 0.0f },
         constant(1.0f),
         linear(0.09f),
@@ -66,7 +67,7 @@ public:
         VAO.LinkAttrib(VBO, 0, 3, GL_FLOAT, 5 * sizeof(GLfloat), (void*)0); // Position Coordinates
         VAO.LinkAttrib(VBO, 1, 2, GL_FLOAT, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat))); // Texture Coordinates
 
-        img.texUnit(imgShader, "u_img", 0); img.Bind();
+        img.PassTextureToShader(imgShader, "u_img"); img.Bind();
 
         VAO.Unbind(); VBO.Unbind(); EBO.Unbind();
 

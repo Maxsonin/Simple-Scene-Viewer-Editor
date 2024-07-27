@@ -12,7 +12,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) # Link time optimization
 
 if(MSVC)
-    add_compile_options(/arch:AVX2) # Make sure SIMD optimizations take place
+    add_compile_options(/arch:AVX2 /MP) # Make sure SIMD optimizations take place and enable parallel compilation
 endif()
 
 project(MyApp)
