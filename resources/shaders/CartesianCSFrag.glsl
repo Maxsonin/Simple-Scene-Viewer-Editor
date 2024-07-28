@@ -4,7 +4,7 @@ out vec4 FragColor;
 
 in vec3 ourColor;
 
-float near = .001f;
+float near = 0.001f;
 float far  = 200.0f;
 
 float linearizeDepth(float depth)

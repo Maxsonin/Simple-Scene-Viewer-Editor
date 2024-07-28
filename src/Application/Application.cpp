@@ -53,6 +53,8 @@ Application::Application()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    glfwWindowHint(GLFW_DEPTH_BITS, 32);
+
     // MSAA
     glfwWindowHint(GLFW_SAMPLES, m_settings->getSamplesPerFragment());
 
@@ -113,6 +115,13 @@ void Application::Run()
     SceneMenu->RegisterTest<Scene::SpecularMaps>("Specular Maps Showcase");
     SceneMenu->RegisterTest<Scene::BackpackModel>("Model Showcase");
 
+    // OpenGL settings
+    glEnable(GL_DEPTH_TEST); glDepthFunc(GL_LEQUAL); // DEPTH
+
+    glEnable(GL_MULTISAMPLE); // MASS
+
+    glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // BLENDING
+
     static int frameCount, FPS;
     static double previousTime;
     while (!glfwWindowShouldClose(m_MainWindow))
@@ -121,14 +130,7 @@ void Application::Run()
 
         processInput();
 
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_MULTISAMPLE);
-        glDepthFunc(GL_LEQUAL);
-
         Renderer::ClearFrame(glm::vec3(0.3, 0.3, 0.3));
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         // Poligon Mode
         if (m_settings->isPolygonModeFill()) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -205,12 +207,14 @@ void Application::ShowWorldSettings()
     ImGui::Begin("Worlds Settings");
 
     // FOV slider
-    ImGui::SliderFloat("FOV", m_Camera.getFOVByRefferance(), 45.0f, 90.0f);
+    ImGui::SliderInt("FOV", m_Camera.getFOVByRefferance(), 45.0f, 90.0f);
+    // Camera mod (orthogonal/perspective)
+    ImGui::Checkbox("Ortogonal view (TEST OPTION)", &m_Camera.isOrtogonal);
 
     // MSAA combo box
     const std::vector<std::string> msaaOptions = { "OFF", "2x MSAA", "4x MSAA", "8x MSAA" };
     static int currentMSAAOption = 2; // Default to 4x MSAA
-    if (ImGui::BeginCombo("MSAA(dont work)", msaaOptions[currentMSAAOption].c_str()))
+    if (ImGui::BeginCombo("MSAA(work in progress...)", msaaOptions[currentMSAAOption].c_str()))
     {
         for (int n = 0; n < msaaOptions.size(); n++)
         {

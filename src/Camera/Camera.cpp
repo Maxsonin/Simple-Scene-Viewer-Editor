@@ -1,15 +1,16 @@
 #include "../include/Camera/Camera.h"
-
-#include <glm/gtc/matrix_transform.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vector_angle.hpp>
+
 #include <iostream>
 
 Camera::Camera()
 {
+	glm::vec3 target = { 5.0f, 1.0f, 5.0f }; // Can be any value
+
 	mEye = glm::vec3(0.0f, 3.0f, 0.0f);
-	glm::vec3 target = { 5.0f, 1.0f, 5.0f };
 	mViewDirection = glm::normalize(target - mEye); 
 	mUpVector = glm::vec3(0.0f, 1.0f, 0.0f);
 }

@@ -24,7 +24,7 @@ private:
 	unsigned int m_windowHeight = 1080;
 
 	float m_Near = 0.01f;
-	float m_Far = 1000.0f;
+	float m_Far  = 1000.0f;
 
 	static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -43,7 +43,17 @@ public:
 	glm::mat4 GetProjectionMatrix()
 	{
 		float aspectRatio = float(m_windowWidth) / m_windowHeight;
-		return glm::perspective(glm::radians(m_Camera.getFOV()), aspectRatio, m_Near, m_Far);
+		if (m_Camera.isOrtogonal)
+		{
+			float orthoScale = 5.0f; // Adjust this value to control zoom level
+			float left = -orthoScale * aspectRatio;
+			float right = orthoScale * aspectRatio;
+			float bottom = -orthoScale;
+			float top = orthoScale;
+			return glm::ortho(left, right, bottom, top, m_Near, m_Far);
+		}
+		else
+			return glm::perspective(glm::radians(m_Camera.getFOV()), aspectRatio, m_Near, m_Far);	
 	}
 
 	void Run();

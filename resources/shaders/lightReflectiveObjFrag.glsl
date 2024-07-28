@@ -70,6 +70,12 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(SpotLight spotLight, vec3 normal, vec3 fragPos, vec3 viewDir);
 
+float linearizeDepth(float depth);
+float logisticDepth(float depth, float steepness = 0.5f, float offset = 5.0f);
+
+float near = 0.001f;
+float far  = 200.0f;
+
 void main()
 {
     vec3 norm = normalize(Normal);
@@ -88,7 +94,9 @@ void main()
     for(int i = 0; i < u_NumSpotLights; i++)
         result += CalcSpotLight(spotLights[i], norm, FragPos, viewDir);  
     
-    FragColor = vec4(result, 1.0);
+    float depth = logisticDepth(gl_FragCoord.z);
+
+    FragColor = vec4(result, 1.0f) * (1.0f - depth) + vec4(depth * vec3(0.3f, 0.3f, 0.3f), 1.0f);
 }
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
@@ -151,4 +159,15 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     specular *= attenuation * intensity;
 
     return (ambient + diffuse + specular);
+}
+
+float linearizeDepth(float depth)
+{
+    return (2.0 * near * far) / (far + near - (depth * 2.0 - 1.0) * (far - near));
+}
+
+float logisticDepth(float depth, float steepness, float offset)
+{
+    float zVal = linearizeDepth(depth);
+    return (1 / (1 + exp(-steepness * (zVal - offset))));
 }

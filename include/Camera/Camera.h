@@ -8,6 +8,8 @@
 class Camera
 {
 public:
+	bool isOrtogonal = false;
+
 	Camera();
 
 	glm::mat4 GetViewMatrix() const;
@@ -16,7 +18,7 @@ public:
 	glm::vec3 GetPosition() { return mEye; }
 
 	float getFOV() { return m_FOV; }
-	float* getFOVByRefferance() { return &m_FOV; }
+	int* getFOVByRefferance() { return &m_FOV; }
 	void setFOV(float newVal) { m_FOV = newVal; }
 
 	float mSpeed = 15.0f;
@@ -26,7 +28,7 @@ private:
 	glm::vec3 mViewDirection;
 	glm::vec3 mUpVector;
 
-	float m_FOV = 45.f;
+	int m_FOV = 45;
 
 	float sensitivity = 0.1f;
 };
