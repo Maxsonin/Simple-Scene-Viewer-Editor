@@ -21,6 +21,7 @@
 #include "Scenes/Scene.h"
 #include "Scenes/UserScenes/BackpackModel.h"
 #include "Scenes/UserScenes/SpecularMaps.h"
+#include "Buffers/FrameBuffer.h"
 
 
 void Application::framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -106,6 +107,21 @@ Application::~Application()
 
 void Application::Run()
 {
+    // Frame Buffer Set-up
+    FrameBuffer FBO(m_settings);
+    Shader fbShader("./resources/shaders/fbVert.glsl", "./resources/shaders/fbFrag.glsl");
+
+    VertexArray screenVAO; VertexBuffer screenVBO(FBO.quadVertices, sizeof(FBO.quadVertices));
+    screenVAO.Bind(); screenVBO.Bind();
+    screenVAO.LinkAttrib(screenVBO, 0, 2, GL_FLOAT, 4 * sizeof(float), (void*)0);
+    screenVAO.LinkAttrib(screenVBO, 1, 2, GL_FLOAT, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    screenVAO.Unbind(); screenVBO.Unbind();
+
+    fbShader.Bind();
+    glUniform1i(glGetUniformLocation(FBO.m_RendererID, "screenTexture"), 0);
+    fbShader.Unbind();
+
+
     Scene::Scene* crntScene = nullptr;
     Scene::SceneMenu* SceneMenu = new Scene::SceneMenu(m_settings, crntScene);
     crntScene = SceneMenu;
@@ -116,25 +132,26 @@ void Application::Run()
     SceneMenu->RegisterTest<Scene::BackpackModel>("Model Showcase");
 
     // OpenGL settings
-    glEnable(GL_DEPTH_TEST); glDepthFunc(GL_LEQUAL); // DEPTH
+    glDepthFunc(GL_LEQUAL); // DEPTH
 
     glEnable(GL_MULTISAMPLE); // MASS
 
     glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // BLENDING
 
-    static int frameCount, FPS;
-    static double previousTime;
+    static int frameCount = 0, FPS = 0;
+    static double previousTime = 0.0;
     while (!glfwWindowShouldClose(m_MainWindow))
     {
         glfwPollEvents();
 
         processInput();
 
+        FBO.Bind();
+
         Renderer::ClearFrame(glm::vec3(0.3, 0.3, 0.3));
 
-        // Poligon Mode
-        if (m_settings->isPolygonModeFill()) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        else glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glEnable(GL_DEPTH_TEST);
+
 
         // ImGui
         ImGui_ImplOpenGL3_NewFrame();
@@ -149,6 +166,10 @@ void Application::Run()
         }
 
         /////////////////////////////////////////////////////////
+
+        // Poligon Mode
+        if (m_settings->isPolygonModeFill()) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        else glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         ShowWorldSettings();
 
@@ -170,6 +191,17 @@ void Application::Run()
         }
 
         /////////////////////////////////////////////////////////
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        FBO.Unbind(); fbShader.Bind();
+        screenVAO.Bind();
+        glDisable(GL_DEPTH_TEST);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, FBO.framebufferTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        fbShader.Unbind();
+        screenVAO.Unbind();
+
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

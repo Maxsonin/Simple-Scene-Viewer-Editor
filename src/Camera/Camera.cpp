@@ -69,7 +69,7 @@ void Camera::Inputs(GLFWwindow* window)
 	// Handles mouse inputs
 	static bool firstClick = true;
 	static double origMouseX, origMouseY;
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 	{
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
@@ -100,7 +100,7 @@ void Camera::Inputs(GLFWwindow* window)
 		// Update the view direction
 		mViewDirection = glm::rotate(yaw * pitch, mViewDirection);
 	}
-	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 	{
 		firstClick = true;
 	}

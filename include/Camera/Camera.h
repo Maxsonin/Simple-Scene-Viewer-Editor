@@ -28,7 +28,7 @@ private:
 	glm::vec3 mViewDirection;
 	glm::vec3 mUpVector;
 
-	int m_FOV = 45;
+	int m_FOV = 60;
 
 	float sensitivity = 0.1f;
 };
