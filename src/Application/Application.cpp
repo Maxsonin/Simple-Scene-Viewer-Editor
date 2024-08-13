@@ -91,6 +91,12 @@ Application::Application()
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(m_MainWindow, true);
     ImGui_ImplOpenGL3_Init("#version 330");
+    
+    // Show Device Settings
+    std::cout << "Vendor graphic card: " << glGetString(GL_VENDOR)                   << std::endl;
+    std::cout << "Renderer: "            << glGetString(GL_RENDERER)                 << std::endl;
+    std::cout << "Version GL: "          << glGetString(GL_VERSION)                  << std::endl;
+    std::cout << "Version GLSL: "        << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n\n";
 }
 
 Application::~Application()
@@ -193,7 +199,9 @@ void Application::Run()
         /////////////////////////////////////////////////////////
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        FBO.Unbind(); fbShader.Bind();
+        FBO.Unbind();
+        // Draw FrameBuffer
+        fbShader.Bind();
         screenVAO.Bind();
         glDisable(GL_DEPTH_TEST);
         glActiveTexture(GL_TEXTURE0);

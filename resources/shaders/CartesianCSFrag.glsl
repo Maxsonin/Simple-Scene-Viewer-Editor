@@ -4,22 +4,22 @@ out vec4 FragColor;
 
 in vec3 ourColor;
 
-float near = 0.001f;
-float far  = 200.0f;
+const float near = 0.001;
+const float far  = 200.0;
 
 float linearizeDepth(float depth)
 {
     return (2.0 * near * far) / (far + near - (depth * 2.0 - 1.0) * (far - near));
 }
 
-float logisticDepth(float depth, float steepness = 0.5f, float offset = 5.0f)
+float logisticDepth(float depth, float steepness, float offset)
 {
     float zVal = linearizeDepth(depth);
-    return (1 / (1 + exp(-steepness * (zVal - offset))));
+    return (1.0 / (1.0 + exp(-steepness * (zVal - offset))));
 }
 
 void main()
 {
-    float depth = logisticDepth(gl_FragCoord.z);
-    FragColor = vec4(ourColor, 1.0f) * (1.0f - depth) + vec4(depth * vec3(0.3f, 0.3f, 0.3f), 1.0f);
+    float depth = logisticDepth(gl_FragCoord.z, 0.5, 5.0);
+    FragColor = vec4(ourColor, 1.0) * (1.0 - depth) + vec4(depth * vec3(0.3, 0.3, 0.3), 1.0);
 }

@@ -71,42 +71,42 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(SpotLight spotLight, vec3 normal, vec3 fragPos, vec3 viewDir);
 
 float linearizeDepth(float depth);
-float logisticDepth(float depth, float steepness = 0.5f, float offset = 5.0f);
+float logisticDepth(float depth, float steepness, float offset);
 
-float near = 0.001f;
-float far  = 200.0f;
+const float near = 0.001;
+const float far  = 200.0;
 
 void main()
 {
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(u_ViewPos - FragPos);
 
-    vec3 result = vec3(0.0f);
+    vec3 result = vec3(0.0);
 
-    if(u_DirectionLightEnabled)
+    if (u_DirectionLightEnabled)
     {
         result += CalcDirLight(dirLight, norm, viewDir);
     }
 
-    for(int i = 0; i < u_NumPointLights; i++)
+    for (int i = 0; i < u_NumPointLights; i++)
         result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);    
 
-    for(int i = 0; i < u_NumSpotLights; i++)
+    for (int i = 0; i < u_NumSpotLights; i++)
         result += CalcSpotLight(spotLights[i], norm, FragPos, viewDir);  
     
-    float depth = logisticDepth(gl_FragCoord.z);
+    float depth = logisticDepth(gl_FragCoord.z, 0.5, 5.0);
 
-    FragColor = vec4(result, 1.0f) * (1.0f - depth) + vec4(depth * vec3(0.3f, 0.3f, 0.3f), 1.0f);
+    FragColor = vec4(result, 1.0) * (1.0 - depth) + vec4(depth * vec3(0.3, 0.3, 0.3), 1.0);
 }
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(-light.direction);
 
-    float diff = max(dot(lightDir, normal), 0.0f);
+    float diff = max(dot(lightDir, normal), 0.0);
 
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0f), u_Material.shininess);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Material.shininess);
 
     vec3 ambient  = light.ambient * vec3(texture(u_Material.texture_diffuse1, TexCoord));
     vec3 diffuse  = light.diffuse  * diff * vec3(texture(u_Material.texture_diffuse1, TexCoord));
@@ -118,19 +118,21 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
     vec3 lightDir = normalize(light.position - fragPos);
 
-    float diff = max(dot(lightDir, normal), 0.0f);
+    float diff = max(dot(lightDir, normal), 0.0);
 
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0f), u_Material.shininess);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Material.shininess);
 
     float distance    = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + 
-  			     light.quadratic * (distance * distance));   
+                               light.quadratic * (distance * distance));   
 
     vec3 ambient  = light.ambient * vec3(texture(u_Material.texture_diffuse1, TexCoord));
     vec3 diffuse  = light.diffuse  * diff * vec3(texture(u_Material.texture_diffuse1, TexCoord));
     vec3 specular = light.specular * spec * vec3(texture(u_Material.texture_specular1, TexCoord)).r;
-    ambient  *= attenuation;  diffuse  *= attenuation;  specular *= attenuation;
+    ambient  *= attenuation;  
+    diffuse  *= attenuation;  
+    specular *= attenuation;
 
     return (ambient + diffuse + specular);
 }
@@ -139,10 +141,10 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
     vec3 lightDir = normalize(light.position - fragPos);
 
-    float diff = max(dot(lightDir, normal), 0.0f);
+    float diff = max(dot(lightDir, normal), 0.0);
 
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0f), u_Material.shininess);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Material.shininess);
 
     float distance = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance)); 
@@ -169,5 +171,5 @@ float linearizeDepth(float depth)
 float logisticDepth(float depth, float steepness, float offset)
 {
     float zVal = linearizeDepth(depth);
-    return (1 / (1 + exp(-steepness * (zVal - offset))));
+    return (1.0 / (1.0 + exp(-steepness * (zVal - offset))));
 }
