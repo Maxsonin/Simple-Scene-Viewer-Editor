@@ -29,6 +29,7 @@ private:
 	static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 	void ShowWorldSettings();
+	void ShowSystemSettings();
 
 public:
 	Application(); ~Application();
@@ -57,8 +58,6 @@ public:
 	}
 
 	void Run();
-
-	//void DebugPanel(Scene::Scene crntScene);
 
 	void processInput();
 };

@@ -56,9 +56,6 @@ Application::Application()
 
     glfwWindowHint(GLFW_DEPTH_BITS, 32);
 
-    // MSAA
-    glfwWindowHint(GLFW_SAMPLES, m_settings->getSamplesPerFragment());
-
     m_MainWindow = glfwCreateWindow(m_windowWidth, m_windowHeight, "Test Site", NULL, NULL);
     if (m_MainWindow == NULL)
     {
@@ -113,20 +110,26 @@ Application::~Application()
 
 void Application::Run()
 {
+    int width = m_settings->application->getWindowWidth();
+    int height = m_settings->application->getWindowHeight();
+
     // Frame Buffer Set-up
-    FrameBuffer FBO(m_settings);
-    Shader fbShader("./resources/shaders/fbVert.glsl", "./resources/shaders/fbFrag.glsl");
+        FrameBuffer FBO = FrameBuffer(width, height, m_settings->getSamplesPerFragment());
+        FrameBuffer postProcessingFBO = FrameBuffer(width, height);
+        Shader fbShader("./resources/shaders/fbVert.glsl", "./resources/shaders/fbFrag.glsl");
 
-    VertexArray screenVAO; VertexBuffer screenVBO(FBO.quadVertices, sizeof(FBO.quadVertices));
-    screenVAO.Bind(); screenVBO.Bind();
-    screenVAO.LinkAttrib(screenVBO, 0, 2, GL_FLOAT, 4 * sizeof(float), (void*)0);
-    screenVAO.LinkAttrib(screenVBO, 1, 2, GL_FLOAT, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-    screenVAO.Unbind(); screenVBO.Unbind();
+        VertexArray screenVAO; VertexBuffer screenVBO = VertexBuffer(FBO.quadVertices, sizeof(FBO.quadVertices));
+        screenVAO.Bind(); screenVBO.Bind();
+        screenVAO.LinkAttrib(screenVBO, 0, 2, GL_FLOAT, 4 * sizeof(float), (void*)0);
+        screenVAO.LinkAttrib(screenVBO, 1, 2, GL_FLOAT, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+        screenVAO.Unbind(); screenVBO.Unbind();
 
-    fbShader.Bind();
-    glUniform1i(glGetUniformLocation(FBO.m_RendererID, "screenTexture"), 0);
-    fbShader.Unbind();
+        fbShader.Bind();
+        glUniform1i(glGetUniformLocation(fbShader.ID, "screenTexture"), 0);
+        fbShader.Unbind();
 
+        glCheckError();
+    //
 
     Scene::Scene* crntScene = nullptr;
     Scene::SceneMenu* SceneMenu = new Scene::SceneMenu(m_settings, crntScene);
@@ -148,16 +151,28 @@ void Application::Run()
     static double previousTime = 0.0;
     while (!glfwWindowShouldClose(m_MainWindow))
     {
+        glCheckError();
+
+        if (m_settings->isMSAAChanged())
+        {
+            FBO.Reset(width, height, m_settings->getSamplesPerFragment());
+            postProcessingFBO.Reset(width, height);
+            m_settings->setMSAAChanged(false);
+        }
+
+        glCheckError();
+
         glfwPollEvents();
 
         processInput();
 
-        FBO.Bind();
+        FBO.Bind(); glCheckError();
 
         Renderer::ClearFrame(glm::vec3(0.3, 0.3, 0.3));
 
         glEnable(GL_DEPTH_TEST);
 
+        glCheckError();
 
         // ImGui
         ImGui_ImplOpenGL3_NewFrame();
@@ -179,8 +194,13 @@ void Application::Run()
 
         ShowWorldSettings();
 
+        glCheckError();
+
+        ShowSystemSettings();
+
         cartesianCS->OnRender();
 
+        glCheckError();
         if (crntScene)
         {
             crntScene->OnUpdate(0.0f);
@@ -199,17 +219,27 @@ void Application::Run()
         /////////////////////////////////////////////////////////
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        FBO.Unbind();
-        // Draw FrameBuffer
+
+        glCheckError();
+
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, FBO.m_RendererID); 
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, postProcessingFBO.m_RendererID);
+        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+        glCheckError();
+
+        FBO.Unbind();  glCheckError();
+
         fbShader.Bind();
         screenVAO.Bind();
         glDisable(GL_DEPTH_TEST);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, FBO.framebufferTexture);
+        glBindTexture(GL_TEXTURE_2D, postProcessingFBO.framebufferTexture);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         fbShader.Unbind();
         screenVAO.Unbind();
 
+        glCheckError();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -233,28 +263,31 @@ void Application::Run()
     delete cartesianCS;
 }
 
-//void Application::DebugPanel(Scene::Scene crntScene)
-//{
-//    ImGui::Begin("Debug Log");
-//
-//    //crntScene.GetDebugOutput();
-//
-//    ImGui::End;
-//}
-
 void Application::ShowWorldSettings()
 {
     ImGui::Begin("Worlds Settings");
+    if (ImGui::CollapsingHeader("Camera Settings"))
+    {
+        // FOV slider
+        ImGui::SliderInt("FOV", m_Camera.getFOVByRefferance(), 45.0f, 90.0f);
+        // Camera mod (orthogonal/perspective)
+        ImGui::Checkbox("Ortogonal view (TEST OPTION)", &m_Camera.isOrtogonal);
+    }
+    ImGui::End();
+}
 
-    // FOV slider
-    ImGui::SliderInt("FOV", m_Camera.getFOVByRefferance(), 45.0f, 90.0f);
-    // Camera mod (orthogonal/perspective)
-    ImGui::Checkbox("Ortogonal view (TEST OPTION)", &m_Camera.isOrtogonal);
+void Application::ShowSystemSettings()
+{
+    ImGui::Begin("System Settings");
 
     // MSAA combo box
     const std::vector<std::string> msaaOptions = { "OFF", "2x MSAA", "4x MSAA", "8x MSAA" };
-    static int currentMSAAOption = 2; // Default to 4x MSAA
-    if (ImGui::BeginCombo("MSAA(work in progress...)", msaaOptions[currentMSAAOption].c_str()))
+    static int currentMSAAOption = 0;
+    int samples = m_settings->getSamplesPerFragment();
+    if (samples == 2) currentMSAAOption = 1;
+    else if (samples == 4) currentMSAAOption = 2;
+    else if (samples == 8) currentMSAAOption = 3;
+    if (ImGui::BeginCombo("MSAA", msaaOptions[currentMSAAOption].c_str()))
     {
         for (int n = 0; n < msaaOptions.size(); n++)
         {
@@ -277,8 +310,7 @@ void Application::ShowWorldSettings()
                     m_settings->setSamplesPerFragment(8);
                     break;
                 }
-
-                glfwWindowHint(GLFW_SAMPLES, m_settings->getSamplesPerFragment());
+                m_settings->setMSAAChanged(true);
             }
             if (isSelected)
             {
