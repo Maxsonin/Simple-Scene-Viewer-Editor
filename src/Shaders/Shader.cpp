@@ -4,10 +4,15 @@
 #include <sstream>
 #include <iostream>
 
-Shader::Shader(const char* vertexFile, const char* fragmentFile)
+Shader::Shader(const std::string& shaderName, const char* vertexFile, const char* fragmentFile)
+    :m_ShaderProgramName(shaderName)
 {
-    ID = glCreateProgram();
-    if (ID == 0) { throw std::runtime_error("An error occurs while creating the program object"); }
+    m_RendererID = glCreateProgram();
+    if (m_RendererID == 0) 
+    {
+        std::cerr << FATAL_ERROR("ERROR: Unable to create Shader Program: Name - " + shaderName + ", ID - " + std::to_string(m_RendererID));
+        exit(EXIT_FAILURE);
+    }
 
     std::string vertexShaderSource = LoadShaderAsString(vertexFile);
     std::string fragmentShaderSource = LoadShaderAsString(fragmentFile);
@@ -15,19 +20,21 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile)
     GLuint vertexShader = CompileShader(GL_VERTEX_SHADER, vertexShaderSource);
     GLuint fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
-    glAttachShader(ID, vertexShader);
-    glAttachShader(ID, fragmentShader);
+    glAttachShader(m_RendererID, vertexShader);
+    glAttachShader(m_RendererID, fragmentShader);
 
-    glLinkProgram(ID);
+    glLinkProgram(m_RendererID);
     GLint linkStatus;
-    glGetProgramiv(ID, GL_LINK_STATUS, &linkStatus);
+    glGetProgramiv(m_RendererID, GL_LINK_STATUS, &linkStatus);
     if (linkStatus == GL_FALSE) 
     {
         GLint logLength;
-        glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &logLength);
+        glGetProgramiv(m_RendererID, GL_INFO_LOG_LENGTH, &logLength);
         std::string log(logLength, ' ');
-        glGetProgramInfoLog(ID, logLength, nullptr, log.data());
-        throw std::runtime_error("Failed to link program: \n" + log);
+        glGetProgramInfoLog(m_RendererID, logLength, nullptr, log.data());
+
+        std::cerr << FATAL_ERROR("ERROR: Failed to link Shader Program: Name - " + shaderName + "\nLog: " + log);
+        exit(EXIT_FAILURE);
     }
 
     glDeleteShader(vertexShader);
@@ -37,7 +44,7 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile)
 std::string Shader::LoadShaderAsString(const std::string& filename)
 {
     std::ifstream fileStream(filename, std::ios::in | std::ios::binary);
-    if (!fileStream.is_open()) { throw std::runtime_error("Failed to open file: " + filename); }
+    if (!fileStream.is_open()) { throw std::runtime_error(FATAL_ERROR("ERROR: Failed to open file: " + filename)); }
 
     std::stringstream buffer;
     buffer << fileStream.rdbuf();
@@ -62,8 +69,8 @@ GLuint Shader::CompileShader(GLenum type, const std::string& source)
         if (logLength > 0)
         {
             glGetShaderInfoLog(shaderObj, logLength, nullptr, &log[0]);
-            std::cerr << "Failed to compile shader : \n" + log + "\n";
-            exit(1);
+            std::cerr << FATAL_ERROR("ERROR: Failed to COMPILE Shader: Shader Program - " + m_ShaderProgramName + ", Shader Type - " + std::to_string(type) + "\nLog: " + log);
+            exit(EXIT_FAILURE);
         }
     }
 

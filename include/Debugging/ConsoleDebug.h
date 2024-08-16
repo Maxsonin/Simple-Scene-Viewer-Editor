@@ -45,23 +45,23 @@ enum class BackgroundColor
 };
 
 // ANSI escape codes
-std::string BOLD(const std::string& text)      { return "\033[1m" + text + "\033[0m"; }
-std::string ITALIC(const std::string& text)    { return "\033[3m" + text + "\033[0m"; }
-std::string UNDERLINE(const std::string& text) { return "\033[4m" + text + "\033[0m"; }
+inline std::string BOLD(const std::string& text)      { return "\033[1m" + text + "\033[0m"; }
+inline std::string ITALIC(const std::string& text)    { return "\033[3m" + text + "\033[0m"; }
+inline std::string UNDERLINE(const std::string& text) { return "\033[4m" + text + "\033[0m"; }
 
-std::string ColoredText(const std::string& text, TextColor color)
+inline std::string ColoredText(const std::string& text, TextColor color)
 {
     return "\033[" + std::to_string(static_cast<int>(color)) + "m" + text + "\033[0m";
 }
 
-std::string ColoredBackgroundText(const std::string& text, BackgroundColor color)
+inline std::string ColoredBackgroundText(const std::string& text, BackgroundColor color)
 {
     return "\033[" + std::to_string(static_cast<int>(color)) + "m" + text + "\033[0m";
 }
 
 // Special output
-std::string ERROR(const std::string& text)       { return ColoredText(BOLD(text), TextColor::RED); }
-std::string FATAL_ERROR(const std::string& text) { return ColoredBackgroundText(BOLD(text), BackgroundColor::RED); }
-std::string WARNING(const std::string& text)     { return ColoredText(BOLD(text), TextColor::YELLOW); }
+inline std::string ERROR(const std::string& text)       { return ColoredText(BOLD(text), TextColor::RED); }
+inline std::string FATAL_ERROR(const std::string& text) { return ColoredBackgroundText(BOLD(text), BackgroundColor::RED); }
+inline std::string WARNING(const std::string& text)     { return ColoredText(BOLD(text), TextColor::YELLOW); }
 
 #endif // !CONSOLE_DEBUG

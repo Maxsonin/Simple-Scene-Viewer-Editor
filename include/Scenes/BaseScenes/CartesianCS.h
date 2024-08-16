@@ -37,7 +37,7 @@ namespace Scene
         CartesianCS(ApplicationSettings* appSet)
             : Scene(appSet)
         {
-            GL_CHECK(CartesianCSshader = Shader("./resources/shaders/CartesianCSVert.glsl", "./resources/shaders/CartesianCSFrag.glsl"));
+            GL_CHECK(CartesianCSshader = Shader("CartesianCS", "./resources/shaders/CartesianCSVert.glsl", "./resources/shaders/CartesianCSFrag.glsl"));
             glCheckError();
             std::vector<float> gridVertices = CreateGridVertices(100.0f, 3.0f);
             vertices.insert(vertices.end(), gridVertices.begin(), gridVertices.end());

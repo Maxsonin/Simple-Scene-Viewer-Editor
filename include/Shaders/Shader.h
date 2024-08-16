@@ -6,20 +6,22 @@
 
 #include <string>
 #include <unordered_map>
+#include "Debugging/ConsoleDebug.h"
 #include <iostream>
 
 class Shader
 {
 public:
-    GLuint ID = 0;
+    GLuint m_RendererID = 0;
+    std::string m_ShaderProgramName; // For Debug Purpose
     std::unordered_map<std::string, GLint> m_UniformLocarionCache;
 
     Shader() = default;
-    Shader(const char* vertexFile, const char* fragmentFile);
+    Shader(const std::string& shaderName, const char* vertexFile, const char* fragmentFile);
 
-    void Bind() const   { glUseProgram(ID); }
+    void Bind() const   { glUseProgram(m_RendererID); }
     void Unbind() const { glUseProgram(0); }
-    void Delete() { glDeleteProgram(ID); };
+    void Delete() { glDeleteProgram(m_RendererID); };
 
     #pragma region Uniform functions
     // ------------------------------------------------------------------------
@@ -90,13 +92,13 @@ private:
         if (m_UniformLocarionCache.find(name) != m_UniformLocarionCache.end())
             return m_UniformLocarionCache[name];
 
-        GLint location = glGetUniformLocation(ID, name.c_str());
+        GLint location = glGetUniformLocation(m_RendererID, name.c_str());
         if (location == -1)
-            std::cerr << "ERROR: uniform " << name << " couldn't be created\n";
+            std::cerr << ERROR("ERROR: Uniform " + name + " couldn't be created in " + m_ShaderProgramName + " Shader Program");
 
         m_UniformLocarionCache[name] = location;
         return location;
     }
 };
 
-#endif // SHADER_H
+#endif // !SHADER_H

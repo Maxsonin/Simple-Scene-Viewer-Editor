@@ -22,6 +22,7 @@
 #include "Scenes/UserScenes/BackpackModel.h"
 #include "Scenes/UserScenes/SpecularMaps.h"
 #include "Buffers/FrameBuffer.h"
+#include "Debugging/Logger.h"
 
 
 void Application::framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -30,50 +31,44 @@ void Application::framebuffer_size_callback(GLFWwindow* window, int width, int h
 }
 static void error_callback(int error, const char* description)
 {
-    std::cout << "GLFW ERROR: " << description << "\n";
+    std::cerr << FATAL_ERROR("ERROR::GLFW_error_callback::" + std::to_string(error) + ": " + description);
 }
-
 
 Application::Application()
 {
-    glfwSetErrorCallback(error_callback);
+    Logger::Initialize();
 
     // Initialize settings after Application is fully constructed
     m_settings = new ApplicationSettings(this);
 
-    /////////////////////Initialize dependencies/////////////////////
-        // Initialize GLFW
-    if (!glfwInit())
-    {
-        std::cout << "Failed to initialize GLFW\n";
-        exit(EXIT_FAILURE);
-    }
+    // Initialize GLFW
+    if (!glfwInit()) { std::cerr << FATAL_ERROR("Failed to initialize GLFW"); exit(EXIT_FAILURE); }\
+
+    // Set the error callback function
+    glfwSetErrorCallback(error_callback);
 
     // Set GLFW window properties
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
     glfwWindowHint(GLFW_DEPTH_BITS, 32);
 
-    m_MainWindow = glfwCreateWindow(m_windowWidth, m_windowHeight, "Test Site", NULL, NULL);
+    m_MainWindow = glfwCreateWindow(m_windowWidth, m_windowHeight, "3D", NULL, NULL);
     if (m_MainWindow == NULL)
     {
-        std::cout << "Failed to create GLFW window\n";
-        glfwTerminate();
-        exit(EXIT_FAILURE);
+        std::cerr << FATAL_ERROR("Failed to create GLFW window");
+        glfwTerminate(); exit(EXIT_FAILURE);
     }
     glfwMakeContextCurrent(m_MainWindow);
 
     // Load OpenGL function pointers with glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cout << "Failed to initialize GLAD\n";
+        std::cerr << FATAL_ERROR("Failed to initialize GLAD");
         exit(EXIT_FAILURE);
     }
-    /////////////////////////////////////////////////////////////////
 
-       // Set the viewport
+    // Set the viewport
     glViewport(0, 0, m_windowWidth, m_windowHeight);
     glfwSetFramebufferSizeCallback(m_MainWindow, Application::framebuffer_size_callback);
 
@@ -90,10 +85,13 @@ Application::Application()
     ImGui_ImplOpenGL3_Init("#version 330");
     
     // Show Device Settings
-    std::cout << "Vendor graphic card: " << glGetString(GL_VENDOR)                   << std::endl;
-    std::cout << "Renderer: "            << glGetString(GL_RENDERER)                 << std::endl;
-    std::cout << "Version GL: "          << glGetString(GL_VERSION)                  << std::endl;
-    std::cout << "Version GLSL: "        << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n\n";
+    Logger::WriteLog("Device Settings:");
+    Logger::WriteLog("\tVendor graphic card: " + std::string(reinterpret_cast<const char*>(glGetString(GL_VENDOR))));
+    Logger::WriteLog("\tRenderer: "            + std::string(reinterpret_cast<const char*>(glGetString(GL_RENDERER))));
+    Logger::WriteLog("\tVersion GL: "          + std::string(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
+    Logger::WriteLog("\tVersion GLSL: "        + std::string(reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION))) + "\n");
+
+    Logger::WriteLog("GLFW/GLAD Initialized successfully");
 }
 
 Application::~Application()
@@ -116,7 +114,7 @@ void Application::Run()
     // Frame Buffer Set-up
         FrameBuffer FBO = FrameBuffer(width, height, m_settings->getSamplesPerFragment());
         FrameBuffer postProcessingFBO = FrameBuffer(width, height);
-        Shader fbShader("./resources/shaders/fbVert.glsl", "./resources/shaders/fbFrag.glsl");
+        Shader fbShader("fbShader", "./resources/shaders/fbVert.glsl", "./resources/shaders/fbFrag.glsl");
 
         VertexArray screenVAO; VertexBuffer screenVBO = VertexBuffer(FBO.quadVertices, sizeof(FBO.quadVertices));
         screenVAO.Bind(); screenVBO.Bind();
@@ -125,7 +123,7 @@ void Application::Run()
         screenVAO.Unbind(); screenVBO.Unbind();
 
         fbShader.Bind();
-        glUniform1i(glGetUniformLocation(fbShader.ID, "screenTexture"), 0);
+        glUniform1i(glGetUniformLocation(fbShader.m_RendererID, "screenTexture"), 0);
         fbShader.Unbind();
 
         glCheckError();
@@ -266,13 +264,16 @@ void Application::Run()
 void Application::ShowWorldSettings()
 {
     ImGui::Begin("Worlds Settings");
+
     if (ImGui::CollapsingHeader("Camera Settings"))
     {
         // FOV slider
         ImGui::SliderInt("FOV", m_Camera.getFOVByRefferance(), 45.0f, 90.0f);
+
         // Camera mod (orthogonal/perspective)
         ImGui::Checkbox("Ortogonal view (TEST OPTION)", &m_Camera.isOrtogonal);
     }
+
     ImGui::End();
 }
 

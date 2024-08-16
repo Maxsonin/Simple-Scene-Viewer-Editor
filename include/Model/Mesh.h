@@ -64,7 +64,7 @@ public:
             if (name != "texture_normal" && name != "texture_height")
             {
                 // now set the sampler to the correct texture unit
-                int location = glGetUniformLocation(shader.ID, ("u_Material." + name + number).c_str());
+                int location = glGetUniformLocation(shader.m_RendererID, ("u_Material." + name + number).c_str());
                 if (location < 0) 
                 {
                     std::cout << "Error in location for: " << "u_Material." + name + number << std::endl;

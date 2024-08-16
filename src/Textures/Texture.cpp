@@ -105,7 +105,7 @@ Texture::~Texture()
 void Texture::PassTextureToShader(Shader& shader, const char* uniformName)
 {
     shader.Bind();
-    GLuint textureLocation = glGetUniformLocation(shader.ID, uniformName);
+    GLuint textureLocation = glGetUniformLocation(shader.m_RendererID, uniformName);
     if (textureLocation == -1)
         std::cerr << "ERROR: Uniform \"" << uniformName << "\" not found in shader." << std::endl;
     else

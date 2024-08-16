@@ -27,7 +27,7 @@ namespace Scene
         BackpackModel(ApplicationSettings* appSet)
             : Scene(appSet)
         {
-            GL_CHECK(defaultShader = Shader("./resources/shaders/lightReflectiveObjVert.glsl", "./resources/shaders/lightReflectiveObjFrag.glsl"));
+            GL_CHECK(defaultShader = Shader("lightReflectiveObj","./resources/shaders/lightReflectiveObjVert.glsl", "./resources/shaders/lightReflectiveObjFrag.glsl"));
 
             GL_CHECK(backpack = Model("./resources/objects/backpack/backpack.obj"));
 

@@ -63,7 +63,7 @@ namespace Scene
               32.0f
             }
         {
-            GL_CHECK(defaultShader = Shader("./resources/shaders/lightReflectiveObjVert.glsl", "./resources/shaders/lightReflectiveObjFrag.glsl"));
+            GL_CHECK(defaultShader = Shader("lightReflectiveObj", "./resources/shaders/lightReflectiveObjVert.glsl", "./resources/shaders/lightReflectiveObjFrag.glsl"));
 
             GL_CHECK(box = Model("./resources/objects/box.obj"));
 

@@ -2,13 +2,14 @@
 
 #include <glm/glm.hpp>
 #include <glad/glad.h>
+
 #include "Buffers/VertexArray.h"
 #include "Buffers/VertexBuffer.h"
 #include "Buffers/IndexBuffer.h"
 #include "Shaders/Shader.h"
 #include "Textures/Texture.h"
 #include "Debugging/Debugging.h"
-#include <imgui.h>
+#include "Debugging/Logger.h"
 
 class SpotLight
 {
@@ -61,7 +62,7 @@ public:
             0, 2, 3
         };
 
-        imgShader = Shader("./resources/shaders/imgVert.glsl", "./resources/shaders/imgFrag.glsl");
+        imgShader = Shader("imgShader", "./resources/shaders/imgVert.glsl", "./resources/shaders/imgFrag.glsl");
 
         VBO = VertexBuffer(vertices, sizeof(vertices));
         EBO = IndexBuffer(indices, sizeof(indices));
@@ -79,6 +80,8 @@ public:
         imgShader.Unbind();
 
         glCheckError();
+
+        Logger::WriteLog("Spot Light Crated");
     }
 
     void Render(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
